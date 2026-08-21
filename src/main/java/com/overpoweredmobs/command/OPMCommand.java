@@ -22,9 +22,13 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
+import java.util.Set;
 
 public class OPMCommand {
-    private static final String[] ATTRS = {"health", "damage", "speed", "armor", "followRange", "xp", "drops"};
+    private static final String[] STATUS_ATTRS = {"health", "damage", "speed", "armor", "followRange", "xp"};
+    private static final Set<String> SETTABLE_ATTRS = Set.of(
+        "health", "damage", "speed", "armor", "followRange", "xp", "spawnchance"
+    );
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("opm")
@@ -32,7 +36,7 @@ public class OPMCommand {
             .then(Commands.literal("set")
                 .then(Commands.argument("mob", StringArgumentType.word())
                     .then(Commands.argument("attribute", StringArgumentType.word())
-                        .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.1, 100.0))
+                        .then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 100.0))
                             .executes(OPMCommand::executeSet)))))
             .then(Commands.literal("reload")
                 .executes(OPMCommand::executeReload))
@@ -54,6 +58,22 @@ public class OPMCommand {
         String attr = StringArgumentType.getString(ctx, "attribute");
         double value = DoubleArgumentType.getDouble(ctx, "value");
 
+        if (!SETTABLE_ATTRS.contains(attr)) {
+            ctx.getSource().sendFailure(Component.literal(
+                "Unknown attribute: " + attr + ". Valid attributes: " + String.join(", ", SETTABLE_ATTRS)
+            ));
+            return 0;
+        }
+
+        if (attr.equals("spawnchance") && value > 1.0) {
+            ctx.getSource().sendFailure(Component.literal("spawnchance must be between 0.0 and 1.0"));
+            return 0;
+        }
+        if (!attr.equals("spawnchance") && value < 0.1) {
+            ctx.getSource().sendFailure(Component.literal("Multipliers must be at least 0.1"));
+            return 0;
+        }
+
         EntityType<?> type = findEntityType(mobStr);
         if (type == null) {
             ctx.getSource().sendFailure(Component.literal("Unknown entity type: " + mobStr));
@@ -61,7 +81,7 @@ public class OPMCommand {
         }
 
         OverpoweredConfig config = OverpoweredMobs.getConfig();
-        OverpoweredConfig.MobConfig cfg = config.getFor(type);
+        OverpoweredConfig.MobConfig cfg = config.getFor(type).copy();
         cfg.set(attr, value);
         config.setFor(type, cfg);
         config.save();
@@ -84,7 +104,7 @@ public class OPMCommand {
             Component.literal("=== Default multipliers ==="), false);
 
         OverpoweredConfig.MobConfig defaults = config.getDefaults();
-        for (String attr : ATTRS) {
+        for (String attr : STATUS_ATTRS) {
             double val = defaults.get(attr);
             ctx.getSource().sendSuccess(() ->
                 Component.literal("  " + attr + ": " + val), false);
@@ -98,7 +118,7 @@ public class OPMCommand {
             OverpoweredConfig.MobConfig mc = entry.getValue();
             ctx.getSource().sendSuccess(() ->
                 Component.literal("  " + key + ":"), false);
-            for (String attr : ATTRS) {
+            for (String attr : STATUS_ATTRS) {
                 double val = mc.get(attr);
                 ctx.getSource().sendSuccess(() ->
                     Component.literal("    " + attr + ": " + val), false);
@@ -120,7 +140,7 @@ public class OPMCommand {
         config.setTestMode(now);
         config.save();
         ctx.getSource().sendSuccess(() ->
-            Component.literal("Test mode " + (now ? "enabled" : "disabled") + " — all random chances forced to 100%"), true);
+            Component.literal("Test mode " + (now ? "enabled" : "disabled") + " — configured random chances forced to 100%"), true);
         OverpoweredMobsLogger.info("Test mode " + (now ? "enabled" : "disabled"));
         return 1;
     }
@@ -144,21 +164,23 @@ public class OPMCommand {
         Vec3 pos = ctx.getSource().getPosition();
         DifficultyInstance difficulty = level.getCurrentDifficultyAt(BlockPos.containing(pos));
 
-        Mob mount = (Mob) mountType.create(level, EntitySpawnReason.COMMAND);
-        if (mount == null) {
+        var mountEntity = mountType.create(level, EntitySpawnReason.COMMAND);
+        if (!(mountEntity instanceof Mob mount)) {
             ctx.getSource().sendFailure(Component.literal("Failed to create mount"));
             return 0;
         }
-        mount.setPos(pos);
-        mount.finalizeSpawn(level, difficulty, EntitySpawnReason.COMMAND, null);
-        mount.addTag("opm_cavalry_mount");
-        level.addFreshEntity(mount);
 
-        Mob rider = (Mob) riderType.create(level, EntitySpawnReason.COMMAND);
-        if (rider == null) {
+        var riderEntity = riderType.create(level, EntitySpawnReason.COMMAND);
+        if (!(riderEntity instanceof Mob rider)) {
             ctx.getSource().sendFailure(Component.literal("Failed to create rider"));
             return 0;
         }
+
+        mount.setPos(pos);
+        mount.addTag(OverpoweredMobs.CAVALRY_MOUNT_TAG);
+        mount.finalizeSpawn(level, difficulty, EntitySpawnReason.COMMAND, null);
+        level.addFreshEntity(mount);
+
         rider.setPos(pos);
         rider.finalizeSpawn(level, difficulty, EntitySpawnReason.COMMAND, null);
         level.addFreshEntity(rider);

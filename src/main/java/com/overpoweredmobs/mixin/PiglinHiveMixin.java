@@ -36,7 +36,7 @@ public class PiglinHiveMixin {
         if (opm_hiveCooldown < HIVE_CHECK_INTERVAL) return;
         opm_hiveCooldown = 0;
 
-        if (mob.getRandom().nextDouble() >= config.getPiglinHiveChance()) return;
+        if (!config.isTestMode() && mob.getRandom().nextDouble() >= config.getPiglinHiveChance()) return;
 
         Player nearest = level.getNearestPlayer(mob, config.getPiglinHiveRange());
         if (nearest == null) return;

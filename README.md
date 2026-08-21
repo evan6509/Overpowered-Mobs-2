@@ -2,7 +2,7 @@
 
 A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies with boosted stats, OP enchanted gear, charged creepers, cavalry mounts, boss bars, and more — all using only vanilla items for full client compatibility.
 
-**Current version: 0.3.1**
+**Current version: 0.3.2**
 
 ## Features
 
@@ -42,7 +42,7 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 - **Stronghold Mob Wave** — Entering a stronghold (follow_ender_eye advancement) spawns a wave of boosted mobs
 
 ### Commands
-- **Test Mode** — Forces all random chances to 100% for testing
+- **Test Mode** — Forces configured random mechanics to 100% for testing, including mob boosting, charged creepers, cavalry, piñatas, piglin brute gear, and piglin hive alerts
 
 ## Config
 
@@ -119,6 +119,10 @@ All `/opm` commands require **operator** permission.
 | `/opm reset`                           | Reset config to defaults         |
 | `/opm test`                            | Toggle test mode (100% odds)     |
 | `/opm cavalry <rider> <mount>`         | Spawn a rider on a mount for testing |
+
+`<attr>` may be `health`, `damage`, `speed`, `armor`, `followRange`, `xp`, or `spawnchance`.
+
+Drops remain dynamic: monster drops are multiplied by 1.2× without armor and 3× with armor.
 
 ## Build
 

@@ -18,10 +18,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -37,7 +36,8 @@ public class MobAttributesMixin {
         Mob mob = (Mob) (Object) this;
         if (mob.getType().getCategory() != MobCategory.MONSTER) return;
 
-        if (mob.entityTags().contains("opm_cavalry_mount") || mob.entityTags().contains("opm_horde")) return;
+        if (mob.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG)
+            || mob.entityTags().contains(OverpoweredMobs.HORDE_TAG)) return;
 
         OverpoweredMobsLogger.info("finalizeSpawn for " + mob.getType() + " at " + mob.blockPosition() + " reason=" + reason);
 
@@ -96,7 +96,7 @@ public class MobAttributesMixin {
             var follow = mob.getAttribute(Attributes.FOLLOW_RANGE);
             if (follow != null) follow.setBaseValue(follow.getBaseValue() * followMult);
         }
-        mob.addTag("opm_horde");
+        mob.addTag(OverpoweredMobs.HORDE_TAG);
         OverpoweredMobsLogger.info("  -> horde speed=" + speedMult + " followRange=" + followMult);
     }
 
@@ -128,8 +128,8 @@ public class MobAttributesMixin {
             if (mount == null) return;
 
             mount.setPos(rider.getX(), rider.getY(), rider.getZ());
+            mount.addTag(OverpoweredMobs.CAVALRY_MOUNT_TAG);
             mount.finalizeSpawn(level, difficulty, EntitySpawnReason.JOCKEY, null);
-            mount.addTag("opm_cavalry_mount");
             level.addFreshEntity(mount);
 
             if (entry.baby() && rider instanceof Zombie zombie) {

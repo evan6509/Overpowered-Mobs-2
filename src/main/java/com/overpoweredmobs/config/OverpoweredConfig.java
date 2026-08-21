@@ -2,6 +2,7 @@ package com.overpoweredmobs.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.overpoweredmobs.OverpoweredMobs;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,15 +57,7 @@ public class OverpoweredConfig {
     private Map<String, Double> dimensions = new HashMap<>();
     private Map<String, MobConfig> mobs = new HashMap<>(defaultMobOverrides());
     private MobConfig defaults = new MobConfig();
-    private List<CavalryEntry> cavalry = List.of(
-        new CavalryEntry("minecraft:zombie", "minecraft:chicken", 0.15, true),
-        new CavalryEntry("minecraft:creeper", "minecraft:phantom", 0.03, false),
-        new CavalryEntry("minecraft:wither_skeleton", "minecraft:ghast", 0.03, false),
-        new CavalryEntry("minecraft:skeleton", "minecraft:skeleton_horse", 0.2, false),
-        new CavalryEntry("minecraft:stray", "minecraft:skeleton_horse", 0.2, false),
-        new CavalryEntry("minecraft:bogged", "minecraft:skeleton_horse", 0.2, false),
-        new CavalryEntry("minecraft:parched", "minecraft:skeleton_horse", 0.2, false)
-    );
+    private List<CavalryEntry> cavalry = defaultCavalry();
     private double spawnChance = 0.05;
     private double hordeSpeedMultiplier = 1.0;
     private double hordeFollowRangeMultiplier = 3.0;
@@ -89,6 +83,18 @@ public class OverpoweredConfig {
         map.put("minecraft:creeper", creeper);
 
         return map;
+    }
+
+    private static List<CavalryEntry> defaultCavalry() {
+        return List.of(
+            new CavalryEntry("minecraft:zombie", "minecraft:chicken", 0.15, true),
+            new CavalryEntry("minecraft:creeper", "minecraft:phantom", 0.03, false),
+            new CavalryEntry("minecraft:wither_skeleton", "minecraft:ghast", 0.03, false),
+            new CavalryEntry("minecraft:skeleton", "minecraft:skeleton_horse", 0.2, false),
+            new CavalryEntry("minecraft:stray", "minecraft:skeleton_horse", 0.2, false),
+            new CavalryEntry("minecraft:bogged", "minecraft:skeleton_horse", 0.2, false),
+            new CavalryEntry("minecraft:parched", "minecraft:skeleton_horse", 0.2, false)
+        );
     }
 
     public boolean isEnableGear() { return enableGear; }
@@ -175,27 +181,94 @@ public class OverpoweredConfig {
                 Type type = new TypeToken<OverpoweredConfig>(){}.getType();
                 OverpoweredConfig config = GSON.fromJson(reader, type);
                 if (config != null) {
-                    config.defaults.clamp();
-                    for (MobConfig mc : config.mobs.values()) {
-                        mc.clamp();
-                    }
+                    config.normalize();
                     return config;
                 }
-            } catch (IOException e) {
+            } catch (IOException | JsonParseException | IllegalStateException e) {
                 OverpoweredMobs.LOGGER.error("Failed to load config", e);
             }
         }
         OverpoweredConfig config = new OverpoweredConfig();
+        config.normalize();
         config.save();
         return config;
     }
 
     public void save() {
-        try (FileWriter writer = new FileWriter(CONFIG_PATH.toFile())) {
-            GSON.toJson(this, writer);
-            } catch (IOException e) {
-                OverpoweredMobs.LOGGER.error("Failed to save config", e);
+        try {
+            Files.createDirectories(CONFIG_PATH.getParent());
+            try (FileWriter writer = new FileWriter(CONFIG_PATH.toFile())) {
+                GSON.toJson(this, writer);
             }
+        } catch (IOException e) {
+            OverpoweredMobs.LOGGER.error("Failed to save config", e);
+        }
+    }
+
+    private void normalize() {
+        if (dimensions == null) dimensions = new HashMap<>();
+        if (mobs == null) mobs = new HashMap<>(defaultMobOverrides());
+        if (defaults == null) defaults = new MobConfig();
+        if (cavalry == null) cavalry = defaultCavalry();
+
+        defaults.clamp();
+        mobs.entrySet().removeIf(entry -> entry.getKey() == null || entry.getValue() == null);
+        for (MobConfig mobConfig : mobs.values()) {
+            mobConfig.clamp();
+        }
+
+        dimensions.entrySet().removeIf(entry -> entry.getKey() == null || entry.getValue() == null);
+        dimensions.replaceAll((key, value) -> clampMultiplier(value));
+
+        cavalry = new ArrayList<>(cavalry);
+        cavalry.removeIf(entry -> entry == null || entry.rider() == null || entry.mount() == null);
+        for (CavalryEntry entry : cavalry) {
+            entry.clamp();
+        }
+
+        bossBarRange = clampRange(bossBarRange, 32.0);
+        chargedCreeperChance = clampChance(chargedCreeperChance);
+        aggroFollowRange = clampRange(aggroFollowRange, 128.0);
+        aggroFarSpeed = clampSpeed(aggroFarSpeed, 8.4);
+        aggroCloseSpeed = clampSpeed(aggroCloseSpeed, 5.6);
+        aggroSlowRange = clampRange(aggroSlowRange, 10.0);
+        rangedAttackSpeedMultiplier = clampMultiplier(rangedAttackSpeedMultiplier);
+        ghastExplosionMultiplier = clampMultiplier(ghastExplosionMultiplier);
+        piglinBruteGearChance = clampChance(piglinBruteGearChance);
+        silverfishSpeedMultiplier = clampMultiplier(silverfishSpeedMultiplier);
+        shulkerLevitationDurationMultiplier = clampMultiplier(shulkerLevitationDurationMultiplier);
+        piglinHiveChance = clampChance(piglinHiveChance);
+        piglinHiveRange = clampRange(piglinHiveRange, 32.0);
+        strongholdMobCount = clampCount(strongholdMobCount);
+        spawnChance = clampChance(spawnChance);
+        hordeSpeedMultiplier = clampMultiplier(hordeSpeedMultiplier);
+        hordeFollowRangeMultiplier = clampMultiplier(hordeFollowRangeMultiplier);
+        zombiePinataChance = clampChance(zombiePinataChance);
+        zombiePinataCount = clampCount(zombiePinataCount);
+    }
+
+    private static double clampChance(double value) {
+        if (!Double.isFinite(value)) return 0.0;
+        return Math.max(0.0, Math.min(1.0, value));
+    }
+
+    private static double clampMultiplier(double value) {
+        if (!Double.isFinite(value)) return 1.0;
+        return Math.max(0.1, Math.min(100.0, value));
+    }
+
+    private static double clampRange(double value, double fallback) {
+        if (!Double.isFinite(value)) return fallback;
+        return Math.max(0.0, Math.min(1024.0, value));
+    }
+
+    private static double clampSpeed(double value, double fallback) {
+        if (!Double.isFinite(value)) return fallback;
+        return Math.max(0.0, Math.min(100.0, value));
+    }
+
+    private static int clampCount(int value) {
+        return Math.max(0, Math.min(100, value));
     }
 
     public static class MobConfig {
@@ -205,8 +278,6 @@ public class OverpoweredConfig {
         private double armorMultiplier = 2.0;
         private double followRangeMultiplier = 2.0;
         private double xpMultiplier = 3.0;
-        @SerializedName("dropsMultiplier")
-        private double dropMultiplier = 2.0;
         private double spawnChance = -1.0;
         private String weapon;
         private Map<String, Integer> weaponEnchantments;
@@ -217,7 +288,6 @@ public class OverpoweredConfig {
         public double armorMultiplier() { return armorMultiplier; }
         public double followRangeMultiplier() { return followRangeMultiplier; }
         public double xpMultiplier() { return xpMultiplier; }
-        public double dropMultiplier() { return dropMultiplier; }
         public String weapon() { return weapon; }
         public Map<String, Integer> weaponEnchantments() { return weaponEnchantments; }
 
@@ -227,20 +297,35 @@ public class OverpoweredConfig {
         public void setArmorMultiplier(double v) { armorMultiplier = v; }
         public void setFollowRangeMultiplier(double v) { followRangeMultiplier = v; }
         public void setXpMultiplier(double v) { xpMultiplier = v; }
-        public void setDropMultiplier(double v) { dropMultiplier = v; }
 
-        public void clamp() {
-            healthMultiplier = clamp(healthMultiplier);
-            damageMultiplier = clamp(damageMultiplier);
-            speedMultiplier = clamp(speedMultiplier);
-            armorMultiplier = clamp(armorMultiplier);
-            followRangeMultiplier = clamp(followRangeMultiplier);
-            xpMultiplier = clamp(xpMultiplier);
-            dropMultiplier = clamp(dropMultiplier);
+        public MobConfig copy() {
+            MobConfig copy = new MobConfig();
+            copy.healthMultiplier = healthMultiplier;
+            copy.damageMultiplier = damageMultiplier;
+            copy.speedMultiplier = speedMultiplier;
+            copy.armorMultiplier = armorMultiplier;
+            copy.followRangeMultiplier = followRangeMultiplier;
+            copy.xpMultiplier = xpMultiplier;
+            copy.spawnChance = spawnChance;
+            copy.weapon = weapon;
+            copy.weaponEnchantments = weaponEnchantments == null
+                ? null
+                : new HashMap<>(weaponEnchantments);
+            return copy;
         }
 
-        private static double clamp(double v) {
-            return Math.max(0.1, Math.min(100.0, v));
+        public void clamp() {
+            healthMultiplier = clampMultiplier(healthMultiplier);
+            damageMultiplier = clampMultiplier(damageMultiplier);
+            speedMultiplier = clampMultiplier(speedMultiplier);
+            armorMultiplier = clampMultiplier(armorMultiplier);
+            followRangeMultiplier = clampMultiplier(followRangeMultiplier);
+            xpMultiplier = clampMultiplier(xpMultiplier);
+            if (!Double.isFinite(spawnChance)) {
+                spawnChance = -1.0;
+            } else if (spawnChance >= 0.0) {
+                spawnChance = clampChance(spawnChance);
+            }
         }
 
         public void set(String attr, double value) {
@@ -251,7 +336,6 @@ public class OverpoweredConfig {
                 case "armor" -> armorMultiplier = value;
                 case "followRange" -> followRangeMultiplier = value;
                 case "xp" -> xpMultiplier = value;
-                case "drops" -> dropMultiplier = value;
                 case "spawnchance" -> spawnChance = value;
             }
         }
@@ -264,7 +348,6 @@ public class OverpoweredConfig {
                 case "armor" -> armorMultiplier;
                 case "followRange" -> followRangeMultiplier;
                 case "xp" -> xpMultiplier;
-                case "drops" -> dropMultiplier;
                 case "spawnchance" -> spawnChance;
                 default -> 1.0;
             };
@@ -290,5 +373,9 @@ public class OverpoweredConfig {
         public String mount() { return mount; }
         public double chance() { return chance; }
         public boolean baby() { return baby; }
+
+        private void clamp() {
+            chance = clampChance(chance);
+        }
     }
 }

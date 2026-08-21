@@ -20,7 +20,10 @@ public final class BossBarManager {
 
     public static void onWorldTick(ServerLevel level) {
         OverpoweredConfig config = OverpoweredMobs.getConfig();
-        if (!config.isEnableBossBar()) return;
+        if (!config.isEnableBossBar()) {
+            hideAllBars();
+            return;
+        }
         if (level.getServer().getTickCount() % UPDATE_INTERVAL != 0) return;
 
         double range = config.getBossBarRange();
@@ -79,6 +82,12 @@ public final class BossBarManager {
         ServerBossEvent bar = playerBars.remove(player);
         if (bar != null) {
             bar.removePlayer(player);
+        }
+    }
+
+    private static void hideAllBars() {
+        for (ServerBossEvent bar : playerBars.values()) {
+            if (bar.isVisible()) bar.setVisible(false);
         }
     }
 

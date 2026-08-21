@@ -6,6 +6,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -24,6 +25,7 @@ public class DropMultiplierMixin {
     private void afterDropAllDeathLoot(ServerLevel level, DamageSource source, CallbackInfo ci) {
         LivingEntity entity = (LivingEntity) (Object) this;
         if (!(entity instanceof Mob mob)) return;
+        if (mob.getType().getCategory() != MobCategory.MONSTER) return;
         if (mob.entityTags().contains(OverpoweredMobs.PINATA_TAG)) return;
 
         boolean hasArmor = false;

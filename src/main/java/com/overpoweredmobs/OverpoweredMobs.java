@@ -33,6 +33,8 @@ public class OverpoweredMobs implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final String BOOSTED_TAG = "opm_boosted";
     public static final String PINATA_TAG = "opm_pinata";
+    public static final String CAVALRY_MOUNT_TAG = "opm_cavalry_mount";
+    public static final String HORDE_TAG = "opm_horde";
 
     private static OverpoweredConfig config;
 

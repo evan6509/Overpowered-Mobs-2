@@ -7,7 +7,6 @@
     "authors": [],
     "contact": {},
     "license": "MIT",
-    "icon": "assets/overpoweredmobs/icon.png",
     "environment": "*",
     "entrypoints": {
         "main": [

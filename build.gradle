@@ -44,7 +44,7 @@ java {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
+        rename { "${it}_${project.archives_base_name}" }
     }
     doLast {
         def modsDir = file("/Users/evanchubbuck/Movies/fabric test server/26.2/mods/")

@@ -43,14 +43,14 @@ public class DistanceSpeedGoal extends Goal {
     @Override
     public boolean canUse() {
         if (!(mob.level() instanceof ServerLevel level)) return false;
-        Player nearest = level.getNearestPlayer(mob, slowRange + 5.0);
+        Player nearest = findNearestPlayer(level);
         return nearest != null && mob.isAlive();
     }
 
     @Override
     public boolean canContinueToUse() {
         if (!(mob.level() instanceof ServerLevel level)) return false;
-        Player nearest = level.getNearestPlayer(mob, slowRange + 10.0);
+        Player nearest = findNearestPlayer(level);
         return nearest != null && mob.isAlive();
     }
 
@@ -58,7 +58,7 @@ public class DistanceSpeedGoal extends Goal {
     public void tick() {
         if (!(mob.level() instanceof ServerLevel level)) return;
 
-        Player player = level.getNearestPlayer(mob, slowRange + 10.0);
+        Player player = findNearestPlayer(level);
         if (player == null) return;
 
         double dist = mob.distanceTo(player);
@@ -81,6 +81,12 @@ public class DistanceSpeedGoal extends Goal {
 
         float turnRate = (dist >= slowRange) ? FAR_TURN : CLOSE_TURN;
         capYaw(player, turnRate);
+    }
+
+    private Player findNearestPlayer(ServerLevel level) {
+        double followRange = mob.getAttributeValue(Attributes.FOLLOW_RANGE);
+        double searchRange = Math.max(slowRange + 10.0, followRange);
+        return level.getNearestPlayer(mob, searchRange);
     }
 
     private boolean checkStuck() {

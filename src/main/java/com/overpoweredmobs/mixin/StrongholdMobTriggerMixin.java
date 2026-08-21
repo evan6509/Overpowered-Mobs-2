@@ -31,8 +31,9 @@ public class StrongholdMobTriggerMixin {
 
     private static final Identifier EYE_SPY = Identifier.withDefaultNamespace("story/follow_ender_eye");
 
-    @Inject(method = "award", at = @At("HEAD"))
+    @Inject(method = "award", at = @At("RETURN"))
     private void onAward(AdvancementHolder advancement, String criterionKey, CallbackInfoReturnable<Boolean> cir) {
+        if (!cir.getReturnValueZ()) return;
         if (!advancement.id().equals(EYE_SPY)) return;
 
         OverpoweredConfig config = OverpoweredMobs.getConfig();

@@ -71,7 +71,9 @@ public final class EquipmentHelper {
         if (!isPinata) {
             if (isPiglin(mob.getType())) {
                 OverpoweredConfig config = OverpoweredMobs.getConfig();
-                if (mob.getType() == et("minecraft:piglin_brute") && mob.getRandom().nextDouble() >= config.getPiglinBruteGearChance()) {
+                if (mob.getType() == et("minecraft:piglin_brute")
+                    && !config.isTestMode()
+                    && mob.getRandom().nextDouble() >= config.getPiglinBruteGearChance()) {
                     // skip gear for brute
                 } else {
                     setSlot(mob, EquipmentSlot.HEAD, enchanted(enchants, Items.GOLDEN_HELMET, Enchantments.PROTECTION, 10));

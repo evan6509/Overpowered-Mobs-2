@@ -1,6 +1,7 @@
 plugins {
     id "maven-publish"
-    id "net.fabricmc.fabric-loom" version "1.17.14"
+    id "base"
+    id "java"
 }
 
 def getGitCommitCount() {
@@ -9,7 +10,7 @@ def getGitCommitCount() {
     return process.text.trim()
 }
 
-version = project.mod_version + "+mc" + project.minecraft_version + "-b" + getGitCommitCount()
+version = project.mod_version + "+paper" + project.paper_version + "-b" + getGitCommitCount()
 group = project.maven_group
 
 base {
@@ -18,20 +19,27 @@ base {
 
 repositories {
     mavenCentral()
+    maven {
+        name = "papermc"
+        url = uri("https://repo.papermc.io/repository/maven-public/")
+    }
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    compileOnly "io.papermc.paper:paper-api:${project.paper_api_version}"
+}
+
+sourceSets {
+    main {
+        java.setSrcDirs(["src/main/java/com/overpoweredmobs/paper"])
+    }
 }
 
 processResources {
-    inputs.property "version", project.mod_version
+    inputs.property "version", project.version
     filteringCharset "UTF-8"
-    filesMatching("fabric.mod.json") {
-        expand "version": project.mod_version,
-               "minecraft_dependency": project.minecraft_dependency
+    filesMatching("plugin.yml") {
+        expand "version": project.version
     }
 }
 
@@ -45,16 +53,6 @@ java {
 jar {
     from("LICENSE") {
         rename { "${it}_${project.archives_base_name}" }
-    }
-    doLast {
-        def modsDir = file("/Users/evanchubbuck/Movies/fabric test server/26.2/mods/")
-        modsDir.listFiles()
-            ?.findAll { it.name.startsWith("overpoweredmobs-") && it.name != archiveFile.get().asFile.name }
-            ?.each { it.delete() }
-        copy {
-            from archiveFile
-            into modsDir
-        }
     }
 }
 

@@ -1,0 +1,15 @@
+name: OverpoweredMobs
+version: '${version}'
+main: com.overpoweredmobs.paper.OverpoweredMobsPlugin
+description: Turns hostile mobs into formidable enemies with boosted stats, gear, cavalry, and special mechanics.
+api-version: '26.2'
+author: OverpoweredMobs
+commands:
+  opm:
+    description: Manage Overpowered Mobs
+    usage: /opm <status|set|reload|reset|test|cavalry>
+    permission: overpoweredmobs.admin
+permissions:
+  overpoweredmobs.admin:
+    description: Allows use of Overpowered Mobs commands
+    default: op

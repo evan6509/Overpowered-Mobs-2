@@ -1,0 +1,79 @@
+enable-gear: true
+enable-cavalry: true
+enable-pinata: true
+test-mode: false
+enable-boss-bar: true
+boss-bar-range: 32.0
+enable-mob-names: true
+enable-alert-sound: true
+charged-creeper-chance: 1.0
+enable-aggro: true
+aggro-follow-range: 128.0
+enable-distance-speed: true
+aggro-far-speed: 8.4
+aggro-close-speed: 5.6
+aggro-slow-range: 10.0
+ranged-attack-speed-multiplier: 2.0
+ghast-explosion-multiplier: 3.0
+piglin-brute-gear-chance: 0.5
+silverfish-speed-multiplier: 1.0
+shulker-levitation-duration-multiplier: 2.0
+enable-evil-bunnies: true
+enable-piglin-hive: true
+piglin-hive-chance: 0.1
+piglin-hive-range: 32.0
+enable-stronghold-mobs: true
+stronghold-mob-count: 8
+enable-angry-wolves: true
+enable-water-endermen: true
+spawn-chance: 0.05
+horde-speed-multiplier: 1.0
+horde-follow-range-multiplier: 3.0
+zombie-pinata-chance: 0.01
+zombie-pinata-count: 2
+dimensions: {}
+defaults:
+  health: 2.0
+  damage: 2.0
+  speed: 1.0
+  armor: 2.0
+  follow-range: 2.0
+  xp: 3.0
+mobs:
+  minecraft:pillager:
+    spawn-chance: 0.15
+  minecraft:creeper:
+    spawn-chance: 0.2
+  minecraft:drowned:
+    weapon: minecraft:trident
+    weapon-enchantments:
+      minecraft:impaling: 10
+cavalry:
+  - rider: minecraft:zombie
+    mount: minecraft:chicken
+    chance: 0.15
+    baby: true
+  - rider: minecraft:creeper
+    mount: minecraft:phantom
+    chance: 0.03
+    baby: false
+  - rider: minecraft:wither_skeleton
+    mount: minecraft:ghast
+    chance: 0.03
+    baby: false
+  - rider: minecraft:skeleton
+    mount: minecraft:skeleton_horse
+    chance: 0.2
+    baby: false
+  - rider: minecraft:stray
+    mount: minecraft:skeleton_horse
+    chance: 0.2
+    baby: false
+  - rider: minecraft:bogged
+    mount: minecraft:skeleton_horse
+    chance: 0.2
+    baby: false
+  - rider: minecraft:parched
+    mount: minecraft:skeleton_horse
+    chance: 0.2
+    baby: false

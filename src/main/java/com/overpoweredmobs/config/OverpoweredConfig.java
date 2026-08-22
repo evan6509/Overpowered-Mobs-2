@@ -61,6 +61,35 @@ public class OverpoweredConfig {
     private double spawnChance = 0.05;
     private double hordeSpeedMultiplier = 1.0;
     private double hordeFollowRangeMultiplier = 3.0;
+    private boolean enableEndermanTeleportStrike = true;
+    private int endermanTeleportCooldown = 100;
+    private double endermanTeleportMinRange = 4.0;
+    private double endermanTeleportMaxRange = 16.0;
+    private boolean enableCreeperChainDetonation = true;
+    private double creeperChainRadius = 12.0;
+    private boolean enablePhantomPacks = true;
+    private int phantomPackMinSize = 2;
+    private int phantomPackMaxSize = 4;
+    private boolean enableWardenSensorBoost = true;
+    private double wardenSensorRange = 32.0;
+    private boolean enableElytraBoost = true;
+    private double elytraChance = 0.10;
+    private int fireworkBoostInterval = 80;
+    private boolean enableShieldGear = true;
+    private double shieldChance = 0.25;
+    private boolean enableTotemSecondLife = true;
+    private double totemChance = 0.03;
+    private boolean enableBloodMoon = true;
+    private int bloodMoonIntervalNights = 7;
+    private int bloodMoonDurationTicks = 12000;
+    private double bloodMoonHordeChance = 0.90;
+    private boolean enableEliteMobs = true;
+    private double eliteChance = 0.05;
+    private double eliteHealthMultiplier = 3.0;
+    private double eliteDamageMultiplier = 2.0;
+    private double eliteSpeedMultiplier = 1.25;
+    private double eliteArmorMultiplier = 2.0;
+    private double eliteFollowRangeMultiplier = 1.5;
     @SerializedName("zombiePi\u00F1ataChance")
     private double zombiePinataChance = 0.01;
 
@@ -152,6 +181,35 @@ public class OverpoweredConfig {
     public double getSpawnChance() { return spawnChance; }
     public double getHordeSpeedMultiplier() { return hordeSpeedMultiplier; }
     public double getHordeFollowRangeMultiplier() { return hordeFollowRangeMultiplier; }
+    public boolean isEnableEndermanTeleportStrike() { return enableEndermanTeleportStrike; }
+    public int getEndermanTeleportCooldown() { return endermanTeleportCooldown; }
+    public double getEndermanTeleportMinRange() { return endermanTeleportMinRange; }
+    public double getEndermanTeleportMaxRange() { return endermanTeleportMaxRange; }
+    public boolean isEnableCreeperChainDetonation() { return enableCreeperChainDetonation; }
+    public double getCreeperChainRadius() { return creeperChainRadius; }
+    public boolean isEnablePhantomPacks() { return enablePhantomPacks; }
+    public int getPhantomPackMinSize() { return phantomPackMinSize; }
+    public int getPhantomPackMaxSize() { return phantomPackMaxSize; }
+    public boolean isEnableWardenSensorBoost() { return enableWardenSensorBoost; }
+    public double getWardenSensorRange() { return wardenSensorRange; }
+    public boolean isEnableElytraBoost() { return enableElytraBoost; }
+    public double getElytraChance() { return elytraChance; }
+    public int getFireworkBoostInterval() { return fireworkBoostInterval; }
+    public boolean isEnableShieldGear() { return enableShieldGear; }
+    public double getShieldChance() { return shieldChance; }
+    public boolean isEnableTotemSecondLife() { return enableTotemSecondLife; }
+    public double getTotemChance() { return totemChance; }
+    public boolean isEnableBloodMoon() { return enableBloodMoon; }
+    public int getBloodMoonIntervalNights() { return bloodMoonIntervalNights; }
+    public int getBloodMoonDurationTicks() { return bloodMoonDurationTicks; }
+    public double getBloodMoonHordeChance() { return bloodMoonHordeChance; }
+    public boolean isEnableEliteMobs() { return enableEliteMobs; }
+    public double getEliteChance() { return eliteChance; }
+    public double getEliteHealthMultiplier() { return eliteHealthMultiplier; }
+    public double getEliteDamageMultiplier() { return eliteDamageMultiplier; }
+    public double getEliteSpeedMultiplier() { return eliteSpeedMultiplier; }
+    public double getEliteArmorMultiplier() { return eliteArmorMultiplier; }
+    public double getEliteFollowRangeMultiplier() { return eliteFollowRangeMultiplier; }
     public double getZombiePinataChance() { return zombiePinataChance; }
     public int getZombiePinataCount() { return zombiePinataCount; }
 
@@ -243,6 +301,31 @@ public class OverpoweredConfig {
         spawnChance = clampChance(spawnChance);
         hordeSpeedMultiplier = clampMultiplier(hordeSpeedMultiplier);
         hordeFollowRangeMultiplier = clampMultiplier(hordeFollowRangeMultiplier);
+        endermanTeleportCooldown = clampTicks(endermanTeleportCooldown, 100, 2400);
+        endermanTeleportMinRange = clampRange(endermanTeleportMinRange, 4.0);
+        endermanTeleportMaxRange = clampRange(endermanTeleportMaxRange, 16.0);
+        if (endermanTeleportMaxRange < endermanTeleportMinRange) {
+            endermanTeleportMaxRange = endermanTeleportMinRange;
+        }
+        creeperChainRadius = clampRange(creeperChainRadius, 12.0);
+        phantomPackMinSize = clampCount(phantomPackMinSize);
+        phantomPackMaxSize = clampCount(phantomPackMaxSize);
+        phantomPackMinSize = Math.max(1, phantomPackMinSize);
+        phantomPackMaxSize = Math.max(phantomPackMinSize, phantomPackMaxSize);
+        wardenSensorRange = clampRange(wardenSensorRange, 32.0);
+        elytraChance = clampChance(elytraChance);
+        fireworkBoostInterval = clampTicks(fireworkBoostInterval, 80, 2400);
+        shieldChance = clampChance(shieldChance);
+        totemChance = clampChance(totemChance);
+        bloodMoonIntervalNights = clampNights(bloodMoonIntervalNights);
+        bloodMoonDurationTicks = clampTicks(bloodMoonDurationTicks, 12000, 24000);
+        bloodMoonHordeChance = clampChance(bloodMoonHordeChance);
+        eliteChance = clampChance(eliteChance);
+        eliteHealthMultiplier = clampMultiplier(eliteHealthMultiplier);
+        eliteDamageMultiplier = clampMultiplier(eliteDamageMultiplier);
+        eliteSpeedMultiplier = clampMultiplier(eliteSpeedMultiplier);
+        eliteArmorMultiplier = clampMultiplier(eliteArmorMultiplier);
+        eliteFollowRangeMultiplier = clampMultiplier(eliteFollowRangeMultiplier);
         zombiePinataChance = clampChance(zombiePinataChance);
         zombiePinataCount = clampCount(zombiePinataCount);
     }
@@ -269,6 +352,15 @@ public class OverpoweredConfig {
 
     private static int clampCount(int value) {
         return Math.max(0, Math.min(100, value));
+    }
+
+    private static int clampTicks(int value, int fallback, int max) {
+        if (value < 1) return fallback;
+        return Math.min(max, value);
+    }
+
+    private static int clampNights(int value) {
+        return Math.max(1, Math.min(1000, value));
     }
 
     public static class MobConfig {

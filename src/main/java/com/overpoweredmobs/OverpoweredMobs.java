@@ -35,6 +35,10 @@ public class OverpoweredMobs implements ModInitializer {
     public static final String PINATA_TAG = "opm_pinata";
     public static final String CAVALRY_MOUNT_TAG = "opm_cavalry_mount";
     public static final String HORDE_TAG = "opm_horde";
+    public static final String ELITE_TAG = "opm_elite";
+    public static final String ELYTRA_TAG = "opm_elytra";
+    public static final String SECOND_LIFE_TAG = "opm_second_life";
+    public static final String CHAIN_PRIMED_TAG = "opm_chain_primed";
 
     private static OverpoweredConfig config;
 
@@ -95,6 +99,38 @@ public class OverpoweredMobs implements ModInitializer {
         }
 
         OverpoweredMobsLogger.info("  -> boosted, health=" + mob.getHealth() + " maxHealth=" + mob.getMaxHealth());
+    }
+
+    public static void tryApplyElite(Mob mob) {
+        if (!config.isEnableEliteMobs() || mob.entityTags().contains(ELITE_TAG)) return;
+        if (!config.isTestMode() && mob.getRandom().nextDouble() >= config.getEliteChance()) return;
+
+        multiplyAttribute(mob, Attributes.MAX_HEALTH, config.getEliteHealthMultiplier());
+        multiplyAttribute(mob, Attributes.ATTACK_DAMAGE, config.getEliteDamageMultiplier());
+        multiplyAttribute(mob, Attributes.MOVEMENT_SPEED, config.getEliteSpeedMultiplier());
+        multiplyAttribute(mob, Attributes.ARMOR, config.getEliteArmorMultiplier());
+        multiplyAttribute(mob, Attributes.FOLLOW_RANGE, config.getEliteFollowRangeMultiplier());
+        mob.setHealth(mob.getMaxHealth());
+        mob.addTag(ELITE_TAG);
+
+        if (config.isEnableMobNames()) {
+            mob.setCustomName(Component.literal("\u00A75\u00A7l\u2620 Elite ")
+                .append(mob.getType().getDescription()));
+            mob.setCustomNameVisible(true);
+        }
+
+        if (mob.level() instanceof ServerLevel level) {
+            level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
+                mob.getX(), mob.getY() + mob.getBbHeight() * 0.5, mob.getZ(),
+                18, 0.6, 0.8, 0.6, 0.04);
+            level.playSound(null, mob.getX(), mob.getY(), mob.getZ(),
+                SoundEvents.RAID_HORN, SoundSource.HOSTILE, 0.8f, 1.4f);
+        }
+        OverpoweredMobsLogger.info("  -> elite tier applied to " + mob.getType());
+    }
+
+    public static boolean isElite(Mob mob) {
+        return mob.entityTags().contains(ELITE_TAG);
     }
 
     public static boolean isHostileNearby(ServerLevel level, Mob mob, double rangeSq) {
@@ -170,6 +206,7 @@ public class OverpoweredMobs implements ModInitializer {
         });
 
         ServerTickEvents.START_LEVEL_TICK.register(BossBarManager::onWorldTick);
+        ServerTickEvents.START_LEVEL_TICK.register(BloodMoonManager::onWorldTick);
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             if (handler.getPlayer() instanceof ServerPlayer player) {

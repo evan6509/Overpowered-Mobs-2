@@ -38,7 +38,7 @@ public class DropMultiplierMixin {
                 }
             }
         }
-        double multiplier = hasArmor ? 3.0 : 1.2;
+        double multiplier = OverpoweredMobs.isElite(mob) ? 3.0 : (hasArmor ? 3.0 : 1.2);
 
         double mx = entity.getX(), my = entity.getY(), mz = entity.getZ();
         for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, entity.getBoundingBox().inflate(DROP_RADIUS))) {

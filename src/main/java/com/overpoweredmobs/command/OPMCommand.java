@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.overpoweredmobs.OverpoweredMobs;
 import com.overpoweredmobs.OverpoweredMobsLogger;
+import com.overpoweredmobs.BloodMoonManager;
 import com.overpoweredmobs.config.OverpoweredConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -46,6 +47,8 @@ public class OPMCommand {
                 .executes(OPMCommand::executeReset))
             .then(Commands.literal("test")
                 .executes(OPMCommand::executeTest))
+            .then(Commands.literal("bloodmoon")
+                .executes(OPMCommand::executeBloodMoon))
             .then(Commands.literal("cavalry")
                 .then(Commands.argument("rider", StringArgumentType.word())
                     .then(Commands.argument("mount", StringArgumentType.word())
@@ -189,6 +192,18 @@ public class OPMCommand {
 
         ctx.getSource().sendSuccess(() ->
             Component.literal("Spawned " + riderStr + " riding " + mountStr), true);
+        return 1;
+    }
+
+    private static int executeBloodMoon(CommandContext<CommandSourceStack> ctx) {
+        if (!(ctx.getSource().getLevel() instanceof ServerLevel level)) return 0;
+        if (!OverpoweredMobs.getConfig().isEnableBloodMoon()) {
+            ctx.getSource().sendFailure(Component.literal("Blood moon is disabled in the config"));
+            return 0;
+        }
+
+        BloodMoonManager.trigger(level);
+        ctx.getSource().sendSuccess(() -> Component.literal("Blood moon triggered"), true);
         return 1;
     }
 

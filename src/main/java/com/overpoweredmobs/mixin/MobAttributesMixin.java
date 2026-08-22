@@ -1,6 +1,7 @@
 package com.overpoweredmobs.mixin;
 
 import com.overpoweredmobs.CavalryAIGoal;
+import com.overpoweredmobs.BloodMoonManager;
 import com.overpoweredmobs.CreeperHelper;
 import com.overpoweredmobs.DistanceSpeedGoal;
 import com.overpoweredmobs.EquipmentHelper;
@@ -44,7 +45,8 @@ public class MobAttributesMixin {
         OverpoweredConfig config = OverpoweredMobs.getConfig();
 
         double effectiveSpawnChance = config.getSpawnChanceFor(mob.getType());
-        if (!config.isTestMode() && mob.getRandom().nextDouble() >= effectiveSpawnChance) {
+        if (BloodMoonManager.shouldForceHorde(mob)
+            || (!config.isTestMode() && mob.getRandom().nextDouble() >= effectiveSpawnChance)) {
             OverpoweredMobsLogger.info("  -> horde mode (spawnChance roll failed)");
             applyHordeBuffs(mob, config);
             return;
@@ -57,6 +59,7 @@ public class MobAttributesMixin {
         }
 
         OverpoweredMobs.applyBoosts(mob);
+        OverpoweredMobs.tryApplyElite(mob);
 
         if (level instanceof ServerLevel serverLevel) {
             if (config.isEnableDistanceSpeed()

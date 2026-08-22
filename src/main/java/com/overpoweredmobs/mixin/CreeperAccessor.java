@@ -9,5 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface CreeperAccessor {
 
     @Accessor("DATA_IS_POWERED")
-    EntityDataAccessor<Boolean> getDataIsPowered();
+    static EntityDataAccessor<Boolean> getDataIsPowered() {
+        throw new AssertionError();
+    }
 }

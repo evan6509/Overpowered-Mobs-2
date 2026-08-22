@@ -7,7 +7,6 @@
         "ExperienceMultiplierMixin",
         "DropMultiplierMixin",
         "PinataDespawnMixin",
-        "CreeperAccessor",
         "LargeFireballMixin",
         "GhastChargeMixin",
         "PiglinHiveMixin",
@@ -16,10 +15,18 @@
         "StrongholdMobTriggerMixin",
         "GiantAIMixin",
         "WolfMixin",
-        "EndermanMixin"
+        "EndermanMixin",
+        "CreeperChainMixin",
+        "PhantomSpawnerMixin",
+        "WardenSensorMixin",
+        "ElytraBoostMixin",
+        "TotemSecondLifeMixin"
     ],
     "accessors": [
-        "LargeFireballAccessor"
+        "LargeFireballAccessor",
+        "CreeperAccessor",
+        "LivingEntityAccessor",
+        "FireworkRocketAccessor"
     ],
     "injectors": {
         "defaultRequire": 1

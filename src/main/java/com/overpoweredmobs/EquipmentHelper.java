@@ -66,11 +66,26 @@ public final class EquipmentHelper {
         if (!isEquippable(mob.getType())) return;
 
         HolderGetter<Enchantment> enchants = registryAccess.lookupOrThrow(Registries.ENCHANTMENT);
+        OverpoweredConfig config = OverpoweredMobs.getConfig();
 
         boolean isPinata = mob.entityTags().contains(OverpoweredMobs.PINATA_TAG);
         if (!isPinata) {
-            if (isPiglin(mob.getType())) {
-                OverpoweredConfig config = OverpoweredMobs.getConfig();
+            boolean useElytra = config.isEnableElytraBoost()
+                && (config.isTestMode() || mob.getRandom().nextDouble() < config.getElytraChance());
+            if (useElytra) {
+                setSlot(mob, EquipmentSlot.CHEST, new ItemStack(Items.ELYTRA));
+                if (isPiglin(mob.getType())) {
+                    setSlot(mob, EquipmentSlot.HEAD, enchanted(enchants, Items.GOLDEN_HELMET, Enchantments.PROTECTION, 10));
+                    setSlot(mob, EquipmentSlot.LEGS, enchanted(enchants, Items.GOLDEN_LEGGINGS, Enchantments.PROTECTION, 10));
+                    setSlot(mob, EquipmentSlot.FEET, enchanted(enchants, Items.GOLDEN_BOOTS, Enchantments.PROTECTION, 10));
+                } else {
+                    setSlot(mob, EquipmentSlot.HEAD, enchanted(enchants, Items.NETHERITE_HELMET, Enchantments.PROTECTION, 10));
+                    setSlot(mob, EquipmentSlot.LEGS, enchanted(enchants, Items.NETHERITE_LEGGINGS, Enchantments.PROTECTION, 10));
+                    setSlot(mob, EquipmentSlot.FEET, enchanted(enchants, Items.NETHERITE_BOOTS, Enchantments.PROTECTION, 10));
+                }
+                mob.addTag(OverpoweredMobs.ELYTRA_TAG);
+                OverpoweredMobsLogger.info("  -> equipped elytra");
+            } else if (isPiglin(mob.getType())) {
                 if (mob.getType() == et("minecraft:piglin_brute")
                     && !config.isTestMode()
                     && mob.getRandom().nextDouble() >= config.getPiglinBruteGearChance()) {
@@ -86,6 +101,16 @@ public final class EquipmentHelper {
                 setSlot(mob, EquipmentSlot.CHEST, enchanted(enchants, Items.NETHERITE_CHESTPLATE, Enchantments.PROTECTION, 10));
                 setSlot(mob, EquipmentSlot.LEGS, enchanted(enchants, Items.NETHERITE_LEGGINGS, Enchantments.PROTECTION, 10));
                 setSlot(mob, EquipmentSlot.FEET, enchanted(enchants, Items.NETHERITE_BOOTS, Enchantments.PROTECTION, 10));
+            }
+
+            if (config.isEnableTotemSecondLife()
+                && (config.isTestMode() || mob.getRandom().nextDouble() < config.getTotemChance())) {
+                setSlot(mob, EquipmentSlot.OFFHAND, new ItemStack(Items.TOTEM_OF_UNDYING));
+                OverpoweredMobsLogger.info("  -> equipped totem of undying");
+            } else if (config.isEnableShieldGear()
+                && (config.isTestMode() || mob.getRandom().nextDouble() < config.getShieldChance())) {
+                setSlot(mob, EquipmentSlot.OFFHAND, new ItemStack(Items.SHIELD));
+                OverpoweredMobsLogger.info("  -> equipped shield");
             }
         }
 
@@ -120,7 +145,7 @@ public final class EquipmentHelper {
 
     private static void setSlot(Mob mob, EquipmentSlot slot, ItemStack stack) {
         mob.setItemSlot(slot, stack);
-        mob.setDropChance(slot, 0.0f);
+        mob.setDropChance(slot, OverpoweredMobs.isElite(mob) ? 1.0f : 0.0f);
     }
 
     @SuppressWarnings("unchecked")

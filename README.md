@@ -17,6 +17,9 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 - **Custom Weapon Config** — Per-mob weapon + enchantment overrides (Drowned defaults to Trident + Impaling X)
 - **Piglin Gold Armor** — Piglins get gold armor instead of netherite; brutes have 50% gear chance
 - **Ranged Attack Speed** — Skeletons, strays, bogged, and parched shoot faster
+- **Shield Gear** — Equippable hostile mobs can roll a vanilla shield in the off hand
+- **Elytra Assaults** — Rare equippable mobs fly with elytra and periodic firework boosts when they have no melee target
+- **Second Life** — A rare totem roll lets a hostile mob survive one lethal hit
 
 ### Mobs
 - **Charged Creepers** — Configurable chance (default 100%) for creepers to spawn visually charged
@@ -37,9 +40,15 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 - **Zombified Piglin Hivemind** — Zombified piglins periodically anger nearby piglins (10% chance per second)
 - **Angry Wolves** — All wolves spawn permanently angry at the nearest player
 - **Water-resistant Endermen** — Endermen no longer take damage from water or rain
+- **Enderman Teleport Strike** — Endermen can blink near their combat target and strike on a cooldown
+- **Creeper Chain Detonation** — Charged creeper explosions prime nearby charged creepers in sequence
+- **Phantom Packs** — Night-time phantom spawning uses configurable pack sizes
+- **Boosted Wardens** — Boosted Wardens have an extended sculk vibration listener range
 
 ### Events
 - **Stronghold Mob Wave** — Entering a stronghold (follow_ender_eye advancement) spawns a wave of boosted mobs
+- **Blood Moon / Horde Night** — Scheduled or manually triggered nights telegraph with sky flashes, particles, and sound while increasing horde-mode rolls
+- **Elite Mobs** — A rare tier layered on boosted mobs has extra stats, a purple elite name, soul-fire particles, and guaranteed equipped-gear drops
 
 ### Commands
 - **Test Mode** — Forces configured random mechanics to 100% for testing, including mob boosting, charged creepers, cavalry, piñatas, piglin brute gear, and piglin hive alerts
@@ -81,6 +90,35 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
   "enableWaterEndermen": true,
   "chargedCreeperChance": 1.0,
   "spawnChance": 0.05,
+  "enableEndermanTeleportStrike": true,
+  "endermanTeleportCooldown": 100,
+  "endermanTeleportMinRange": 4.0,
+  "endermanTeleportMaxRange": 16.0,
+  "enableCreeperChainDetonation": true,
+  "creeperChainRadius": 12.0,
+  "enablePhantomPacks": true,
+  "phantomPackMinSize": 2,
+  "phantomPackMaxSize": 4,
+  "enableWardenSensorBoost": true,
+  "wardenSensorRange": 32.0,
+  "enableElytraBoost": true,
+  "elytraChance": 0.1,
+  "fireworkBoostInterval": 80,
+  "enableShieldGear": true,
+  "shieldChance": 0.25,
+  "enableTotemSecondLife": true,
+  "totemChance": 0.03,
+  "enableBloodMoon": true,
+  "bloodMoonIntervalNights": 7,
+  "bloodMoonDurationTicks": 12000,
+  "bloodMoonHordeChance": 0.9,
+  "enableEliteMobs": true,
+  "eliteChance": 0.05,
+  "eliteHealthMultiplier": 3.0,
+  "eliteDamageMultiplier": 2.0,
+  "eliteSpeedMultiplier": 1.25,
+  "eliteArmorMultiplier": 2.0,
+  "eliteFollowRangeMultiplier": 1.5,
   "defaults": { ... },
   "mobs": {
     "minecraft:pillager": { "spawnChance": 0.15 },
@@ -118,6 +156,7 @@ All `/opm` commands require **operator** permission.
 | `/opm reload`                          | Reload config from disk          |
 | `/opm reset`                           | Reset config to defaults         |
 | `/opm test`                            | Toggle test mode (100% odds)     |
+| `/opm bloodmoon`                       | Trigger a blood moon immediately  |
 | `/opm cavalry <rider> <mount>`         | Spawn a rider on a mount for testing |
 
 `<attr>` may be `health`, `damage`, `speed`, `armor`, `followRange`, `xp`, or `spawnchance`.

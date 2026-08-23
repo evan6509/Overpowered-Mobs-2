@@ -69,6 +69,13 @@ public class OverpoweredMobs implements ModInitializer {
         multiplyAttribute(mob, Attributes.ATTACK_DAMAGE, damageMult);
         multiplyAttribute(mob, Attributes.MOVEMENT_SPEED, speedMult);
         multiplyAttribute(mob, Attributes.ARMOR, armorMult);
+
+        if (config.isEnableAggro()) {
+            var follow = mob.getAttribute(Attributes.FOLLOW_RANGE);
+            if (follow != null) {
+                follow.setBaseValue(config.getAggroFollowRange());
+            }
+        }
         multiplyAttribute(mob, Attributes.FOLLOW_RANGE, followRangeMult);
 
         if (EquipmentHelper.isRangedMob(type)) {
@@ -88,13 +95,6 @@ public class OverpoweredMobs implements ModInitializer {
         if (config.isEnableMobNames()) {
             mob.setCustomName(Component.literal("\u00A7c\u26A1 Overpowered ").append(mob.getType().getDescription()));
             mob.setCustomNameVisible(true);
-        }
-
-        if (config.isEnableAggro()) {
-            var follow = mob.getAttribute(Attributes.FOLLOW_RANGE);
-            if (follow != null) {
-                follow.setBaseValue(config.getAggroFollowRange());
-            }
         }
 
         OverpoweredMobsLogger.info("  -> boosted, health=" + mob.getHealth() + " maxHealth=" + mob.getMaxHealth());

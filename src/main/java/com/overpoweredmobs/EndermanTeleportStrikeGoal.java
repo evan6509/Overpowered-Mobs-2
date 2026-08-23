@@ -16,6 +16,10 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public class EndermanTeleportStrikeGoal extends Goal {
+    private static final double LANDING_MIN_RANGE = 1.5;
+    private static final double LANDING_MAX_RANGE = 2.5;
+    private static final double STRIKE_RANGE = 3.5;
+
     private final EnderMan enderman;
     private int cooldown;
 
@@ -58,7 +62,7 @@ public class EndermanTeleportStrikeGoal extends Goal {
         LivingEntity target = enderman.getTarget();
         if (target == null || !target.isAlive()) return;
 
-        Vec3 destination = findDestination(level, target, config);
+        Vec3 destination = findDestination(level, target);
         if (destination == null) return;
 
         level.sendParticles(ParticleTypes.PORTAL,
@@ -76,19 +80,18 @@ public class EndermanTeleportStrikeGoal extends Goal {
             20, 0.4, 0.8, 0.4, 0.2);
         level.playSound(null, enderman.getX(), enderman.getY(), enderman.getZ(),
             SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1.0f, 1.0f);
-        if (enderman.distanceToSqr(target) <= 3.5 * 3.5) {
+        if (enderman.distanceToSqr(target) <= STRIKE_RANGE * STRIKE_RANGE) {
             enderman.doHurtTarget(level, target);
         }
     }
 
-    private Vec3 findDestination(ServerLevel level, LivingEntity target, OverpoweredConfig config) {
-        double min = config.getEndermanTeleportMinRange();
-        double max = config.getEndermanTeleportMaxRange();
+    private Vec3 findDestination(ServerLevel level, LivingEntity target) {
         AABB currentBox = enderman.getBoundingBox();
 
         for (int attempt = 0; attempt < 12; attempt++) {
             double angle = enderman.getRandom().nextDouble() * Math.PI * 2.0;
-            double distance = min + enderman.getRandom().nextDouble() * (max - min);
+            double distance = LANDING_MIN_RANGE
+                + enderman.getRandom().nextDouble() * (LANDING_MAX_RANGE - LANDING_MIN_RANGE);
             double x = target.getX() + Math.cos(angle) * distance;
             double y = target.getY();
             double z = target.getZ() + Math.sin(angle) * distance;

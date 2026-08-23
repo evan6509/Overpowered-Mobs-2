@@ -13,7 +13,7 @@ public class PhantomSpawnerMixin {
 
     @Redirect(
         method = "tick",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;nextInt(I)I", ordinal = 3)
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;nextInt(I)I", ordinal = 5)
     )
     private int useConfiguredPackSize(RandomSource random, int vanillaBound) {
         OverpoweredConfig config = OverpoweredMobs.getConfig();

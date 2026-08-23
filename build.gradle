@@ -14,6 +14,7 @@ group = project.maven_group
 
 def resourceModVersion = project.mod_version
 def minecraftDependency = project.minecraft_dependency
+def archiveBaseName = project.archives_base_name
 def testServerModsDir = providers.gradleProperty("testServerModsDir")
 
 base {
@@ -48,7 +49,7 @@ java {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archives_base_name}" }
+        rename { "${it}_${archiveBaseName}" }
     }
 }
 

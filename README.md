@@ -171,7 +171,11 @@ Drops remain dynamic: monster drops are multiplied by 1.2Ã— without armor and 3Ã
 
 Output: `build/libs/overpoweredmobs-<version>+mc26.2-b<build_number>.jar`
 
-The JAR includes a build number from the git commit count. Old JARs are automatically cleaned from the test server mods folder on each build.
+The JAR includes a build number from the git commit count. To deploy it to a local test server and remove older Overpowered Mobs JARs there, run:
+
+```bash
+./gradlew deployToTestServer -PtestServerModsDir="/path/to/server/mods"
+```
 
 ## Requirements
 

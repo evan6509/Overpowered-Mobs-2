@@ -12,6 +12,10 @@ def getGitCommitCount() {
 version = project.mod_version + "+mc" + project.minecraft_version + "-b" + getGitCommitCount()
 group = project.maven_group
 
+def resourceModVersion = project.mod_version
+def minecraftDependency = project.minecraft_dependency
+def testServerModsDir = providers.gradleProperty("testServerModsDir")
+
 base {
     archivesName = project.archives_base_name
 }
@@ -27,11 +31,11 @@ dependencies {
 }
 
 processResources {
-    inputs.property "version", project.mod_version
-    filteringCharset "UTF-8"
+    inputs.property "version", resourceModVersion
+    filteringCharset = "UTF-8"
     filesMatching("fabric.mod.json") {
-        expand "version": project.mod_version,
-               "minecraft_dependency": project.minecraft_dependency
+        expand "version": resourceModVersion,
+               "minecraft_dependency": minecraftDependency
     }
 }
 
@@ -46,15 +50,30 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.archives_base_name}" }
     }
+}
+
+tasks.register("deployToTestServer") {
+    group = "deployment"
+    description = "Builds and copies the mod JAR to -PtestServerModsDir=<path>"
+    dependsOn tasks.named("jar")
+
     doLast {
-        def modsDir = file("/Users/evanchubbuck/Movies/fabric test server/26.2/mods/")
-        modsDir.listFiles()
-            ?.findAll { it.name.startsWith("overpoweredmobs-") && it.name != archiveFile.get().asFile.name }
-            ?.each { it.delete() }
-        copy {
-            from archiveFile
-            into modsDir
+        String configuredDir = testServerModsDir.orNull
+        if (configuredDir == null || configuredDir.isBlank()) {
+            throw new GradleException("Set -PtestServerModsDir=<path> to deploy the mod")
         }
+
+        File jarFile = tasks.named("jar").get().archiveFile.get().asFile
+        File modsDir = new File(configuredDir)
+        java.nio.file.Files.createDirectories(modsDir.toPath())
+        modsDir.listFiles()
+            ?.findAll { it.name.startsWith("overpoweredmobs-") && it.name != jarFile.name }
+            ?.each { java.nio.file.Files.deleteIfExists(it.toPath()) }
+        java.nio.file.Files.copy(
+            jarFile.toPath(),
+            modsDir.toPath().resolve(jarFile.name),
+            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+        )
     }
 }
 

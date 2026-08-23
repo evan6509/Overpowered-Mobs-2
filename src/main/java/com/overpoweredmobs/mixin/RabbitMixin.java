@@ -3,8 +3,6 @@ package com.overpoweredmobs.mixin;
 import com.overpoweredmobs.OverpoweredMobs;
 import com.overpoweredmobs.config.OverpoweredConfig;
 
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -21,14 +19,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class RabbitMixin {
 
     @Shadow
-    private static EntityDataAccessor<Integer> DATA_TYPE_ID;
+    private void setVariant(Rabbit.Variant variant) {
+        throw new AssertionError();
+    }
 
-    @Inject(method = "finalizeSpawn", at = @At("HEAD"))
+    @Inject(method = "finalizeSpawn", at = @At("RETURN"))
     private void onFinalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason reason, SpawnGroupData data, CallbackInfoReturnable<SpawnGroupData> cir) {
-        Rabbit rabbit = (Rabbit) (Object) this;
         OverpoweredConfig config = OverpoweredMobs.getConfig();
         if (config.isEnableEvilBunnies()) {
-            rabbit.getEntityData().set(DATA_TYPE_ID, Rabbit.Variant.EVIL.id());
+            setVariant(Rabbit.Variant.EVIL);
         }
     }
 }

@@ -2,6 +2,7 @@ package com.overpoweredmobs;
 
 import com.overpoweredmobs.config.OverpoweredConfig;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -96,9 +97,10 @@ public class EndermanTeleportStrikeGoal extends Goal {
             double y = target.getY();
             double z = target.getZ() + Math.sin(angle) * distance;
             BlockPos feet = BlockPos.containing(x, y, z);
+            BlockPos floor = feet.below();
             if (!level.getBlockState(feet).isAir()
                 || !level.getBlockState(feet.above()).isAir()
-                || !level.getBlockState(feet.below()).isSolid()) {
+                || !level.getBlockState(floor).entityCanStandOnFace(level, floor, enderman, Direction.UP)) {
                 continue;
             }
 

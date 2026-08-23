@@ -65,7 +65,8 @@ public final class BloodMoonManager {
     public static boolean shouldForceHorde(Mob mob) {
         if (!(mob.level() instanceof ServerLevel level) || !isActive(level)) return false;
         OverpoweredConfig config = OverpoweredMobs.getConfig();
-        return config.isTestMode() || mob.getRandom().nextDouble() < config.getBloodMoonHordeChance();
+        return !config.isTestMode()
+            && mob.getRandom().nextDouble() < config.getBloodMoonHordeChance();
     }
 
     public static int getRemaining(ServerLevel level) {

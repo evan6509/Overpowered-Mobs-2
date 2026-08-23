@@ -2,37 +2,40 @@ package com.overpoweredmobs.mixin;
 
 import com.overpoweredmobs.OverpoweredMobs;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(LivingEntity.class)
+@Mixin(Entity.class)
 public class DropMultiplierMixin {
-    @Unique
-    private static final double DROP_RADIUS = 2.0;
-
-    @Inject(method = "dropAllDeathLoot", at = @At("RETURN"))
-    private void afterDropAllDeathLoot(ServerLevel level, DamageSource source, CallbackInfo ci) {
-        LivingEntity entity = (LivingEntity) (Object) this;
-        if (!(entity instanceof Mob mob)) return;
+    @Inject(
+        method = "spawnAtLocation(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/entity/item/ItemEntity;",
+        at = @At("RETURN")
+    )
+    private void multiplyDeathDrop(ServerLevel level, ItemStack stack, Vec3 offset,
+        CallbackInfoReturnable<ItemEntity> cir) {
+        Entity entity = (Entity) (Object) this;
+        if (!(entity instanceof Mob mob) || !mob.isDeadOrDying()) return;
         if (mob.getType().getCategory() != MobCategory.MONSTER) return;
         if (mob.entityTags().contains(OverpoweredMobs.PINATA_TAG)) return;
+
+        ItemEntity original = cir.getReturnValue();
+        if (original == null || stack.isEmpty()) return;
 
         boolean hasArmor = false;
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             if (slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
-                ItemStack stack = mob.getItemBySlot(slot);
-                if (!stack.isEmpty()) {
+                ItemStack equipped = mob.getItemBySlot(slot);
+                if (!equipped.isEmpty()) {
                     hasArmor = true;
                     break;
                 }
@@ -40,18 +43,22 @@ public class DropMultiplierMixin {
         }
         double multiplier = OverpoweredMobs.isElite(mob) ? 3.0 : (hasArmor ? 3.0 : 1.2);
 
-        double mx = entity.getX(), my = entity.getY(), mz = entity.getZ();
-        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, entity.getBoundingBox().inflate(DROP_RADIUS))) {
-            if (item.isAlive() && item.hasPickUpDelay() && item.distanceToSqr(mx, my, mz) < DROP_RADIUS * DROP_RADIUS) {
-                ItemStack stack = item.getItem().copy();
-                int extraCount = (int) Math.floor(stack.getCount() * (multiplier - 1.0));
-                if (extraCount > 0) {
-                    stack.setCount(extraCount);
-                    ItemEntity extra = new ItemEntity(level, item.getX(), item.getY(), item.getZ(), stack);
-                    extra.setDeltaMovement(item.getDeltaMovement());
-                    level.addFreshEntity(extra);
-                }
-            }
+        double exactExtra = stack.getCount() * (multiplier - 1.0);
+        int extraCount = (int) Math.floor(exactExtra);
+        if (mob.getRandom().nextDouble() < exactExtra - extraCount) {
+            extraCount++;
+        }
+
+        int maxStackSize = stack.getMaxStackSize();
+        while (extraCount > 0) {
+            int count = Math.min(extraCount, maxStackSize);
+            ItemStack extraStack = stack.copyWithCount(count);
+            ItemEntity extra = new ItemEntity(level,
+                original.getX(), original.getY(), original.getZ(), extraStack);
+            extra.setDefaultPickUpDelay();
+            extra.setDeltaMovement(original.getDeltaMovement());
+            level.addFreshEntity(extra);
+            extraCount -= count;
         }
     }
 }

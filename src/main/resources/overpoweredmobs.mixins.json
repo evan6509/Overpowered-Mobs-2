@@ -19,8 +19,7 @@
         "CreeperChainMixin",
         "PhantomSpawnerMixin",
         "WardenSensorMixin",
-        "ElytraBoostMixin",
-        "TotemSecondLifeMixin"
+        "ElytraBoostMixin"
     ],
     "accessors": [
         "LargeFireballAccessor",

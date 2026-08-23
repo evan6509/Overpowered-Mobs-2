@@ -123,12 +123,15 @@ public class MobAttributesMixin {
             if (!OverpoweredMobs.getConfig().isTestMode() && rider.getRandom().nextDouble() >= entry.chance()) continue;
 
             Identifier mountKey = Identifier.tryParse(entry.mount());
-            if (mountKey == null) return;
+            if (mountKey == null) continue;
             EntityType<?> mountType = BuiltInRegistries.ENTITY_TYPE.getValue(mountKey);
-            if (mountType == null) return;
+            if (mountType == null) continue;
 
-            Mob mount = (Mob) mountType.create(level, EntitySpawnReason.JOCKEY);
-            if (mount == null) return;
+            var mountEntity = mountType.create(level, EntitySpawnReason.JOCKEY);
+            if (!(mountEntity instanceof Mob mount)) {
+                OverpoweredMobsLogger.warn("  -> invalid cavalry mount (not a mob): " + entry.mount());
+                continue;
+            }
 
             mount.setPos(rider.getX(), rider.getY(), rider.getZ());
             mount.addTag(OverpoweredMobs.CAVALRY_MOUNT_TAG);

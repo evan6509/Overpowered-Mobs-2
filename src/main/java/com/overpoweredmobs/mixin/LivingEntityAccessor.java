@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(LivingEntity.class)
 public interface LivingEntityAccessor {
 
-    @Invoker("setSharedFlag")
+    @Invoker("setLivingEntityFlag")
     void opmSetSharedFlag(int flag, boolean value);
 }

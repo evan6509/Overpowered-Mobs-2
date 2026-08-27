@@ -6,8 +6,6 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Phantom;
 
-import java.util.EnumSet;
-
 public class CavalryAIGoal extends Goal {
     private final Mob rider;
     private final Mob mount;
@@ -17,12 +15,14 @@ public class CavalryAIGoal extends Goal {
         this.rider = rider;
         this.mount = mount;
         this.diveBomb = rider instanceof Creeper && mount instanceof Phantom;
-        setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
     @Override
     public boolean canUse() {
-        return rider.isAlive() && mount.isAlive() && rider.getTarget() != null;
+        return rider.isAlive()
+            && mount.isAlive()
+            && rider.getVehicle() == mount
+            && rider.getTarget() != null;
     }
 
     @Override
@@ -51,5 +51,10 @@ public class CavalryAIGoal extends Goal {
             mount.getNavigation().setSpeedModifier(2.0);
             mount.getNavigation().moveTo(target, 2.0);
         }
+    }
+
+    @Override
+    public void stop() {
+        mount.getNavigation().stop();
     }
 }

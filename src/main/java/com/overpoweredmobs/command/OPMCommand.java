@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.overpoweredmobs.OverpoweredMobs;
 import com.overpoweredmobs.OverpoweredMobsLogger;
 import com.overpoweredmobs.BloodMoonManager;
+import com.overpoweredmobs.CavalryHelper;
 import com.overpoweredmobs.config.OverpoweredConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -188,7 +189,12 @@ public class OPMCommand {
         rider.finalizeSpawn(level, difficulty, EntitySpawnReason.COMMAND, null);
         level.addFreshEntity(rider);
 
-        rider.startRiding(mount);
+        if (!CavalryHelper.attachRider(rider, mount)) {
+            rider.discard();
+            mount.discard();
+            ctx.getSource().sendFailure(Component.literal("Failed to attach rider to mount"));
+            return 0;
+        }
 
         ctx.getSource().sendSuccess(() ->
             Component.literal("Spawned " + riderStr + " riding " + mountStr), true);

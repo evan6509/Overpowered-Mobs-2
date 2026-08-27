@@ -1,7 +1,7 @@
 package com.overpoweredmobs.mixin;
 
-import com.overpoweredmobs.CavalryAIGoal;
 import com.overpoweredmobs.BloodMoonManager;
+import com.overpoweredmobs.CavalryHelper;
 import com.overpoweredmobs.CreeperHelper;
 import com.overpoweredmobs.DistanceSpeedGoal;
 import com.overpoweredmobs.EquipmentHelper;
@@ -27,10 +27,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Mob.class)
 public class MobAttributesMixin {
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void syncCavalryRider(CallbackInfo ci) {
+        CavalryHelper.tickRider((Mob) (Object) this);
+    }
 
     @Inject(method = "finalizeSpawn", at = @At("RETURN"))
     private void onFinalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason reason, SpawnGroupData spawnData, CallbackInfoReturnable<SpawnGroupData> cir) {
@@ -142,10 +148,13 @@ public class MobAttributesMixin {
                 zombie.setBaby(true);
             }
 
-            rider.startRiding(mount);
-            mount.getGoalSelector().addGoal(1, new CavalryAIGoal(rider, mount));
-            OverpoweredMobsLogger.info("  -> cavalry: " + riderId + " riding " + entry.mount());
-            return;
+            if (CavalryHelper.attachRider(rider, mount)) {
+                OverpoweredMobsLogger.info("  -> cavalry: " + riderId + " riding " + entry.mount());
+                return;
+            }
+
+            OverpoweredMobsLogger.warn("  -> failed to attach cavalry rider to " + entry.mount());
+            mount.discard();
         }
     }
 }

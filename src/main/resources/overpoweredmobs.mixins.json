@@ -25,6 +25,9 @@
         "LivingEntityAccessor",
         "FireworkRocketAccessor"
     ],
+    "client": [
+        "client.CavalryRiderRendererMixin"
+    ],
     "injectors": {
         "defaultRequire": 1
     }

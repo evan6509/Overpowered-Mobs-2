@@ -6,15 +6,21 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Phantom;
 
+import java.util.EnumSet;
+
 public class CavalryAIGoal extends Goal {
+    private static final int PATH_UPDATE_INTERVAL = 5;
+
     private final Mob rider;
     private final Mob mount;
     private final boolean diveBomb;
+    private int pathUpdateCooldown;
 
     public CavalryAIGoal(Mob rider, Mob mount) {
         this.rider = rider;
         this.mount = mount;
         this.diveBomb = rider instanceof Creeper && mount instanceof Phantom;
+        setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
     @Override
@@ -31,11 +37,21 @@ public class CavalryAIGoal extends Goal {
     }
 
     @Override
+    public void start() {
+        pathUpdateCooldown = 0;
+    }
+
+    @Override
     public void tick() {
         LivingEntity target = rider.getTarget();
         if (target == null) return;
 
         mount.setTarget(target);
+        if (pathUpdateCooldown > 0) {
+            pathUpdateCooldown--;
+            return;
+        }
+        pathUpdateCooldown = PATH_UPDATE_INTERVAL;
 
         if (diveBomb) {
             double dy = target.getY() - mount.getY();
@@ -55,6 +71,7 @@ public class CavalryAIGoal extends Goal {
 
     @Override
     public void stop() {
+        pathUpdateCooldown = 0;
         mount.getNavigation().stop();
     }
 }

@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.Creeper;
@@ -32,6 +33,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Mob.class)
 public class MobAttributesMixin {
+
+    @Inject(method = "getControllingPassenger", at = @At("HEAD"), cancellable = true)
+    private void ignoreCavalryMobPassenger(CallbackInfoReturnable<LivingEntity> cir) {
+        Mob mount = (Mob) (Object) this;
+        if (mount.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG)
+            && mount.getFirstPassenger() instanceof Mob) {
+            cir.setReturnValue(null);
+        }
+    }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void syncCavalryRotation(CallbackInfo ci) {

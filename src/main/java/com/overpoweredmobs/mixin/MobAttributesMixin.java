@@ -34,8 +34,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MobAttributesMixin {
 
     @Inject(method = "tick", at = @At("TAIL"))
-    private void syncCavalryRider(CallbackInfo ci) {
-        CavalryHelper.tickRider((Mob) (Object) this);
+    private void syncCavalryRotation(CallbackInfo ci) {
+        CavalryHelper.tick((Mob) (Object) this);
     }
 
     @Inject(method = "finalizeSpawn", at = @At("RETURN"))

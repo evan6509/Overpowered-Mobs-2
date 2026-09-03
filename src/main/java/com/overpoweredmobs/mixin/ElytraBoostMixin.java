@@ -37,26 +37,18 @@ public class ElytraBoostMixin {
             return;
         }
 
-        boolean wantsToFly = mob.isAlive()
+        boolean canBoost = mob.isAlive()
             && mob.getTarget() == null
             && !living.isPassenger()
-            && !living.isInWater();
-        if (!wantsToFly) {
-            ((LivingEntityAccessor) living).opmSetSharedFlag(7, false);
+            && !living.isInWater()
+            && !living.onGround()
+            && (living.isFallFlying() || living.fallDistance > 1.0);
+        ((LivingEntityAccessor) living).opmSetSharedFlag(7, canBoost);
+        if (!canBoost) {
             opm_fireworkCooldown = 0;
             return;
         }
 
-        if (living.onGround()) {
-            ((LivingEntityAccessor) living).opmSetSharedFlag(7, false);
-            var movement = living.getDeltaMovement();
-            living.setDeltaMovement(movement.x, Math.max(movement.y, 0.6), movement.z);
-            living.hurtMarked = true;
-            opm_fireworkCooldown = 0;
-            return;
-        }
-
-        ((LivingEntityAccessor) living).opmSetSharedFlag(7, true);
         if (opm_fireworkCooldown > 0) {
             opm_fireworkCooldown--;
             return;

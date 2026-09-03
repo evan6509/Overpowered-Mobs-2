@@ -4,6 +4,7 @@
     "compatibilityLevel": "JAVA_21",
     "mixins": [
         "MobAttributesMixin",
+        "ArrowDamageMixin",
         "ExperienceMultiplierMixin",
         "DropMultiplierMixin",
         "PinataDespawnMixin",

@@ -18,7 +18,6 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 - **Piglin Gold Armor** — Piglins get gold armor instead of netherite; brutes have 50% gear chance
 - **Ranged Attack Speed** — Skeletons, strays, bogged, and parched shoot faster
 - **Shield Gear** — Equippable hostile mobs can roll a vanilla shield in the off hand
-- **Elytra Assaults** — Rare equippable mobs fly with elytra and periodic firework boosts when they have no melee target
 - **Second Life** — A rare totem roll lets a hostile mob survive one lethal hit
 
 ### Mobs
@@ -101,9 +100,6 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
   "phantomPackMaxSize": 4,
   "enableWardenSensorBoost": true,
   "wardenSensorRange": 32.0,
-  "enableElytraBoost": true,
-  "elytraChance": 0.1,
-  "fireworkBoostInterval": 80,
   "enableShieldGear": true,
   "shieldChance": 0.25,
   "enableTotemSecondLife": true,

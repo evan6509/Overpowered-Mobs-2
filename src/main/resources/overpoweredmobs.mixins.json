@@ -19,11 +19,8 @@
         "CreeperChainMixin",
         "PhantomSpawnerMixin",
         "WardenSensorMixin",
-        "ElytraBoostMixin",
         "LargeFireballAccessor",
-        "CreeperAccessor",
-        "LivingEntityAccessor",
-        "FireworkRocketAccessor"
+        "CreeperAccessor"
     ],
     "client": [
         "client.CavalryRiderRendererMixin"

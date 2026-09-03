@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
@@ -23,6 +24,8 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -44,8 +47,22 @@ public class MobAttributesMixin {
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
-    private void syncCavalryRotation(CallbackInfo ci) {
-        CavalryHelper.tick((Mob) (Object) this);
+    private void tickMobSystems(CallbackInfo ci) {
+        Mob mob = (Mob) (Object) this;
+        CavalryHelper.tick(mob);
+
+        if (!(mob.level() instanceof ServerLevel level)
+            || !mob.entityTags().contains(OverpoweredMobs.LEGACY_ELYTRA_TAG)) return;
+
+        mob.stopFallFlying();
+        mob.removeTag(OverpoweredMobs.LEGACY_ELYTRA_TAG);
+        if (mob.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA)) {
+            mob.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
+            if (OverpoweredMobs.getConfig().isEnableGear()) {
+                EquipmentHelper.equipOPGear(mob, level.registryAccess());
+            }
+        }
+        OverpoweredMobsLogger.info("  -> removed legacy elytra gear from " + mob.getType());
     }
 
     @Inject(method = "finalizeSpawn", at = @At("RETURN"))

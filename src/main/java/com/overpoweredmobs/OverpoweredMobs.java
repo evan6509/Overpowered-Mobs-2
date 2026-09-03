@@ -36,7 +36,7 @@ public class OverpoweredMobs implements ModInitializer {
     public static final String CAVALRY_MOUNT_TAG = "opm_cavalry_mount";
     public static final String HORDE_TAG = "opm_horde";
     public static final String ELITE_TAG = "opm_elite";
-    public static final String ELYTRA_TAG = "opm_elytra";
+    public static final String LEGACY_ELYTRA_TAG = "opm_elytra";
     public static final String CHAIN_PRIMED_TAG = "opm_chain_primed";
 
     private static OverpoweredConfig config;

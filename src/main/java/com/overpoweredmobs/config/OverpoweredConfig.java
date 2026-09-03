@@ -72,9 +72,6 @@ public class OverpoweredConfig {
     private int phantomPackMaxSize = 4;
     private boolean enableWardenSensorBoost = true;
     private double wardenSensorRange = 32.0;
-    private boolean enableElytraBoost = true;
-    private double elytraChance = 0.10;
-    private int fireworkBoostInterval = 80;
     private boolean enableShieldGear = true;
     private double shieldChance = 0.25;
     private boolean enableTotemSecondLife = true;
@@ -192,9 +189,6 @@ public class OverpoweredConfig {
     public int getPhantomPackMaxSize() { return phantomPackMaxSize; }
     public boolean isEnableWardenSensorBoost() { return enableWardenSensorBoost; }
     public double getWardenSensorRange() { return wardenSensorRange; }
-    public boolean isEnableElytraBoost() { return enableElytraBoost; }
-    public double getElytraChance() { return elytraChance; }
-    public int getFireworkBoostInterval() { return fireworkBoostInterval; }
     public boolean isEnableShieldGear() { return enableShieldGear; }
     public double getShieldChance() { return shieldChance; }
     public boolean isEnableTotemSecondLife() { return enableTotemSecondLife; }
@@ -313,8 +307,6 @@ public class OverpoweredConfig {
         phantomPackMinSize = Math.max(1, phantomPackMinSize);
         phantomPackMaxSize = Math.max(phantomPackMinSize, phantomPackMaxSize);
         wardenSensorRange = clampRange(wardenSensorRange, 32.0);
-        elytraChance = clampChance(elytraChance);
-        fireworkBoostInterval = clampTicks(fireworkBoostInterval, 80, 2400);
         shieldChance = clampChance(shieldChance);
         totemChance = clampChance(totemChance);
         bloodMoonIntervalNights = clampNights(bloodMoonIntervalNights);

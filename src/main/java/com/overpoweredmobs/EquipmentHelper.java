@@ -70,22 +70,7 @@ public final class EquipmentHelper {
 
         boolean isPinata = mob.entityTags().contains(OverpoweredMobs.PINATA_TAG);
         if (!isPinata) {
-            boolean useElytra = config.isEnableElytraBoost()
-                && (config.isTestMode() || mob.getRandom().nextDouble() < config.getElytraChance());
-            if (useElytra) {
-                setSlot(mob, EquipmentSlot.CHEST, new ItemStack(Items.ELYTRA));
-                if (isPiglin(mob.getType())) {
-                    setSlot(mob, EquipmentSlot.HEAD, enchanted(enchants, Items.GOLDEN_HELMET, Enchantments.PROTECTION, 10));
-                    setSlot(mob, EquipmentSlot.LEGS, enchanted(enchants, Items.GOLDEN_LEGGINGS, Enchantments.PROTECTION, 10));
-                    setSlot(mob, EquipmentSlot.FEET, enchanted(enchants, Items.GOLDEN_BOOTS, Enchantments.PROTECTION, 10));
-                } else {
-                    setSlot(mob, EquipmentSlot.HEAD, enchanted(enchants, Items.NETHERITE_HELMET, Enchantments.PROTECTION, 10));
-                    setSlot(mob, EquipmentSlot.LEGS, enchanted(enchants, Items.NETHERITE_LEGGINGS, Enchantments.PROTECTION, 10));
-                    setSlot(mob, EquipmentSlot.FEET, enchanted(enchants, Items.NETHERITE_BOOTS, Enchantments.PROTECTION, 10));
-                }
-                mob.addTag(OverpoweredMobs.ELYTRA_TAG);
-                OverpoweredMobsLogger.info("  -> equipped elytra");
-            } else if (isPiglin(mob.getType())) {
+            if (isPiglin(mob.getType())) {
                 if (mob.getType() == et("minecraft:piglin_brute")
                     && !config.isTestMode()
                     && mob.getRandom().nextDouble() >= config.getPiglinBruteGearChance()) {

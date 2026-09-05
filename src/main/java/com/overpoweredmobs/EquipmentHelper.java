@@ -102,8 +102,9 @@ public final class EquipmentHelper {
         OverpoweredConfig.MobConfig cfg = OverpoweredMobs.getConfig().getFor(mob.getType());
         String weaponId = cfg.weapon();
         if (weaponId != null) {
-            Item weaponItem = BuiltInRegistries.ITEM.getValue(Identifier.tryParse(weaponId));
-            if (weaponItem != null) {
+            Identifier weaponKey = Identifier.tryParse(weaponId);
+            if (weaponKey != null && BuiltInRegistries.ITEM.containsKey(weaponKey)) {
+                Item weaponItem = BuiltInRegistries.ITEM.getValue(weaponKey);
                 Map<String, Integer> enchantsMap = cfg.weaponEnchantments();
                 if (enchantsMap != null && !enchantsMap.isEmpty()) {
                     setSlot(mob, EquipmentSlot.MAINHAND, enchanted(enchantsMap, weaponItem, registryAccess));
@@ -111,8 +112,11 @@ public final class EquipmentHelper {
                     setSlot(mob, EquipmentSlot.MAINHAND, new ItemStack(weaponItem));
                 }
                 OverpoweredMobsLogger.info("  -> equipped custom weapon: " + weaponId);
+                return;
             }
-        } else if (isRangedMob(mob.getType())) {
+            OverpoweredMobsLogger.warn("  -> unknown weapon: " + weaponId + "; using default weapon");
+        }
+        if (isRangedMob(mob.getType())) {
             setSlot(mob, EquipmentSlot.MAINHAND, enchanted(enchants, Items.BOW, Enchantments.POWER, 10, Enchantments.PUNCH, 3, Enchantments.FLAME, 1));
             OverpoweredMobsLogger.info("  -> equipped OP bow");
         } else {

@@ -21,6 +21,7 @@ public class PhantomSpawnerMixin {
 
         int min = config.getPhantomPackMinSize();
         int max = config.getPhantomPackMaxSize();
-        return min + random.nextInt(max - min + 1);
+        // Vanilla adds one to this random value to obtain the final pack size.
+        return min - 1 + random.nextInt(max - min + 1);
     }
 }

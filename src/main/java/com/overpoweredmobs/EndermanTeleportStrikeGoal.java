@@ -22,7 +22,7 @@ public class EndermanTeleportStrikeGoal extends Goal {
     private static final double STRIKE_RANGE = 3.5;
 
     private final EnderMan enderman;
-    private int cooldown;
+    private long nextStrikeTick;
 
     public EndermanTeleportStrikeGoal(EnderMan enderman) {
         this.enderman = enderman;
@@ -31,14 +31,11 @@ public class EndermanTeleportStrikeGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (cooldown > 0) {
-            cooldown--;
-            return false;
-        }
-
         OverpoweredConfig config = OverpoweredMobs.getConfig();
         if (!config.isEnableEndermanTeleportStrike()) return false;
-        if (!(enderman.level() instanceof ServerLevel)) return false;
+        if (!(enderman.level() instanceof ServerLevel level)) return false;
+        // Goal selectors do not poll canUse on every server tick.
+        if (level.getGameTime() < nextStrikeTick) return false;
 
         LivingEntity target = enderman.getTarget();
         if (target == null || !target.isAlive()) return false;
@@ -57,9 +54,8 @@ public class EndermanTeleportStrikeGoal extends Goal {
     @Override
     public void start() {
         OverpoweredConfig config = OverpoweredMobs.getConfig();
-        cooldown = config.getEndermanTeleportCooldown();
-
         if (!(enderman.level() instanceof ServerLevel level)) return;
+        nextStrikeTick = level.getGameTime() + config.getEndermanTeleportCooldown();
         LivingEntity target = enderman.getTarget();
         if (target == null || !target.isAlive()) return;
 
@@ -81,7 +77,8 @@ public class EndermanTeleportStrikeGoal extends Goal {
             20, 0.4, 0.8, 0.4, 0.2);
         level.playSound(null, enderman.getX(), enderman.getY(), enderman.getZ(),
             SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1.0f, 1.0f);
-        if (enderman.distanceToSqr(target) <= STRIKE_RANGE * STRIKE_RANGE) {
+        if (enderman.distanceToSqr(target) <= STRIKE_RANGE * STRIKE_RANGE
+            && enderman.hasLineOfSight(target)) {
             enderman.doHurtTarget(level, target);
         }
     }

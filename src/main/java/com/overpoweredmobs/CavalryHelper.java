@@ -1,5 +1,6 @@
 package com.overpoweredmobs;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
 
 public final class CavalryHelper {
@@ -11,7 +12,7 @@ public final class CavalryHelper {
         syncMount(mount);
         syncRider(rider, mount);
         mount.positionRider(rider);
-        mount.getGoalSelector().addGoal(1, new CavalryAIGoal(rider, mount));
+        ensureGoal(rider, mount);
         return true;
     }
 
@@ -23,7 +24,17 @@ public final class CavalryHelper {
         if (!(mob.getVehicle() instanceof Mob mount)
             || !mount.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG)) return;
 
+        if (mob.level() instanceof ServerLevel) ensureGoal(mob, mount);
         syncRider(mob, mount);
+    }
+
+    private static void ensureGoal(Mob rider, Mob mount) {
+        var goals = mount.getGoalSelector();
+        for (var wrapped : goals.getAvailableGoals()) {
+            if (wrapped.getGoal() instanceof CavalryAIGoal cavalry && cavalry.isFor(rider)) return;
+        }
+        goals.removeAllGoals(goal -> goal instanceof CavalryAIGoal);
+        goals.addGoal(1, new CavalryAIGoal(rider, mount));
     }
 
     private static void syncMount(Mob mount) {

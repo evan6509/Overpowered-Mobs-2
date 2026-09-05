@@ -21,6 +21,8 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
@@ -182,23 +184,37 @@ public class OPMCommand {
 
         mount.setPos(pos);
         mount.addTag(OverpoweredMobs.CAVALRY_MOUNT_TAG);
-        mount.finalizeSpawn(level, difficulty, EntitySpawnReason.COMMAND, null);
-        level.addFreshEntity(mount);
+        finalizeCavalryMob(mount, level, difficulty);
 
         rider.setPos(pos);
-        rider.finalizeSpawn(level, difficulty, EntitySpawnReason.COMMAND, null);
-        level.addFreshEntity(rider);
-
+        // Mount first so spawn initialization cannot schedule random cavalry for this rider.
         if (!CavalryHelper.attachRider(rider, mount)) {
             rider.discard();
             mount.discard();
             ctx.getSource().sendFailure(Component.literal("Failed to attach rider to mount"));
             return 0;
         }
+        finalizeCavalryMob(rider, level, difficulty);
+        mount.positionRider(rider);
+
+        if (!level.addFreshEntity(mount) || !level.addFreshEntity(rider)) {
+            rider.discard();
+            mount.discard();
+            ctx.getSource().sendFailure(Component.literal("Failed to spawn cavalry"));
+            return 0;
+        }
 
         ctx.getSource().sendSuccess(() ->
             Component.literal("Spawned " + riderStr + " riding " + mountStr), true);
         return 1;
+    }
+
+    private static void finalizeCavalryMob(Mob mob, ServerLevel level, DifficultyInstance difficulty) {
+        // Preserve the vanilla baby roll without creating an unrelated chicken mount.
+        SpawnGroupData spawnData = mob instanceof Zombie
+            ? new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(level.getRandom()), false)
+            : null;
+        mob.finalizeSpawn(level, difficulty, EntitySpawnReason.COMMAND, spawnData);
     }
 
     private static int executeBloodMoon(CommandContext<CommandSourceStack> ctx) {
@@ -217,6 +233,6 @@ public class OPMCommand {
         if (!str.contains(":")) str = "minecraft:" + str;
         Identifier id = Identifier.tryParse(str);
         if (id == null) return null;
-        return BuiltInRegistries.ENTITY_TYPE.getValue(id);
+        return BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
     }
 }

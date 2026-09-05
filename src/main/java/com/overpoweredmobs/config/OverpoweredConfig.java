@@ -410,6 +410,14 @@ public class OverpoweredConfig {
             } else if (spawnChance >= 0.0) {
                 spawnChance = clampChance(spawnChance);
             }
+            if (weaponEnchantments != null) {
+                weaponEnchantments.entrySet().removeIf(entry -> entry.getKey() == null
+                    || Identifier.tryParse(entry.getKey()) == null
+                    || entry.getValue() == null
+                    || entry.getValue() <= 0);
+                // Match the levels supported by vanilla ItemEnchantments.Mutable.
+                weaponEnchantments.replaceAll((key, level) -> Math.min(255, level));
+            }
         }
 
         public void set(String attr, double value) {

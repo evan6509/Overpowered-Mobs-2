@@ -37,7 +37,7 @@ public final class BloodMoonManager {
         }
 
         if (!level.dimensionType().hasSkyLight()) return;
-        long time = level.getLevelData().getGameTime();
+        long time = level.getDefaultClockTime();
         long day = Math.floorDiv(time, 24000L);
         int timeOfDay = (int) Math.floorMod(time, 24000L);
         if (timeOfDay < 13000 || timeOfDay >= 23000) return;
@@ -51,7 +51,7 @@ public final class BloodMoonManager {
         OverpoweredConfig config = OverpoweredMobs.getConfig();
         if (!config.isEnableBloodMoon()) return;
 
-        long day = Math.floorDiv(level.getLevelData().getGameTime(), 24000L);
+        long day = Math.floorDiv(level.getDefaultClockTime(), 24000L);
         STARTED_DAYS.put(level, day);
         ACTIVE_TICKS.put(level, config.getBloodMoonDurationTicks());
         telegraph(level, true);

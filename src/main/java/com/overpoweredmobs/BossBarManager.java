@@ -31,6 +31,11 @@ public final class BossBarManager {
 
         for (ServerPlayer player : level.players()) {
             Mob nearest = findNearestBoosted(level, player, rangeSq);
+            if (nearest == null) {
+                ServerBossEvent bar = playerBars.get(player);
+                if (bar != null) bar.setVisible(false);
+                continue;
+            }
             ServerBossEvent bar = playerBars.computeIfAbsent(player, p -> {
                 ServerBossEvent b = new ServerBossEvent(
                     UUID.randomUUID(),
@@ -42,29 +47,26 @@ public final class BossBarManager {
                 return b;
             });
 
-            if (nearest != null) {
-                bar.setName(Component.literal("\u00A7c\u26A1 Overpowered ").append(nearest.getType().getDescription()));
-                float progress = Math.max(0.0f, nearest.getHealth() / nearest.getMaxHealth());
-                bar.setProgress(progress);
+            String prefix = OverpoweredMobs.isElite(nearest) ? "\u00A75\u00A7l\u2620 Elite " : "\u00A7c\u26A1 Overpowered ";
+            bar.setName(Component.literal(prefix).append(nearest.getType().getDescription()));
+            float progress = Math.clamp(nearest.getHealth() / nearest.getMaxHealth(), 0.0f, 1.0f);
+            bar.setProgress(progress);
 
-                if (progress > 0.5f) {
-                    bar.setColor(BossEvent.BossBarColor.GREEN);
-                } else if (progress > 0.25f) {
-                    bar.setColor(BossEvent.BossBarColor.YELLOW);
-                } else {
-                    bar.setColor(BossEvent.BossBarColor.RED);
-                }
-
-                if (!bar.isVisible()) bar.setVisible(true);
-            } else if (bar.isVisible()) {
-                bar.setVisible(false);
+            if (progress > 0.5f) {
+                bar.setColor(BossEvent.BossBarColor.GREEN);
+            } else if (progress > 0.25f) {
+                bar.setColor(BossEvent.BossBarColor.YELLOW);
+            } else {
+                bar.setColor(BossEvent.BossBarColor.RED);
             }
+
+            if (!bar.isVisible()) bar.setVisible(true);
         }
     }
 
     private static Mob findNearestBoosted(ServerLevel level, Player player, double rangeSq) {
         Mob nearest = null;
-        double nearestDistSq = Double.MAX_VALUE;
+        double nearestDistSq = rangeSq;
 
         for (Mob mob : level.getEntitiesOfClass(Mob.class, player.getBoundingBox().inflate(Math.sqrt(rangeSq)))) {
             if (!mob.isAlive()) continue;
@@ -83,6 +85,13 @@ public final class BossBarManager {
         if (bar != null) {
             bar.removePlayer(player);
         }
+    }
+
+    public static void clear() {
+        for (ServerBossEvent bar : playerBars.values()) {
+            bar.removeAllPlayers();
+        }
+        playerBars.clear();
     }
 
     private static void hideAllBars() {

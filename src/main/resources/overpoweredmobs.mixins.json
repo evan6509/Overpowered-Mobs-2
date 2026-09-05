@@ -19,6 +19,7 @@
         "EndermanMixin",
         "CreeperChainMixin",
         "PhantomSpawnerMixin",
+        "PhantomAccessor",
         "WardenSensorMixin",
         "LargeFireballAccessor",
         "CreeperAccessor"

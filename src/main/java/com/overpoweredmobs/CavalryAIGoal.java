@@ -1,10 +1,13 @@
 package com.overpoweredmobs;
 
+import com.overpoweredmobs.mixin.PhantomAccessor;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.Phantom;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
 
@@ -23,12 +26,17 @@ public class CavalryAIGoal extends Goal {
         setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
+    public boolean isFor(Mob rider) {
+        return this.rider == rider;
+    }
+
     @Override
     public boolean canUse() {
         return rider.isAlive()
             && mount.isAlive()
             && rider.getVehicle() == mount
-            && rider.getTarget() != null;
+            && rider.getTarget() != null
+            && rider.getTarget().isAlive();
     }
 
     @Override
@@ -51,18 +59,17 @@ public class CavalryAIGoal extends Goal {
             pathUpdateCooldown--;
             return;
         }
-        pathUpdateCooldown = PATH_UPDATE_INTERVAL;
+        pathUpdateCooldown = PATH_UPDATE_INTERVAL - 1;
 
-        if (diveBomb) {
+        if (mount instanceof Phantom phantom) {
             double dy = target.getY() - mount.getY();
             double hDistSq = mount.distanceToSqr(target.getX(), mount.getY(), target.getZ());
-            if (dy < 10.0 && hDistSq < 225.0) {
-                mount.getNavigation().setSpeedModifier(3.0);
-                mount.getNavigation().moveTo(target, 3.0);
-            } else {
-                mount.getNavigation().setSpeedModifier(1.5);
-                mount.getNavigation().moveTo(target.getX(), target.getY() + 15, target.getZ(), 1.5);
-            }
+            double targetY = diveBomb && !(dy < 10.0 && hDistSq < 225.0)
+                ? target.getY() + 15.0 : target.getY();
+            // Phantoms ignore PathNavigation and steer toward this point directly.
+            ((PhantomAccessor) phantom).setMoveTargetPoint(new Vec3(target.getX(), targetY, target.getZ()));
+        } else if (mount instanceof Ghast) {
+            mount.getMoveControl().setWantedPosition(target.getX(), target.getY(), target.getZ(), 2.0);
         } else {
             mount.getNavigation().setSpeedModifier(2.0);
             mount.getNavigation().moveTo(target, 2.0);
@@ -73,5 +80,10 @@ public class CavalryAIGoal extends Goal {
     public void stop() {
         pathUpdateCooldown = 0;
         mount.getNavigation().stop();
+    }
+
+    @Override
+    public boolean requiresUpdateEveryTick() {
+        return true;
     }
 }

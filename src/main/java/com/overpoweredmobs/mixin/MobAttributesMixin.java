@@ -36,6 +36,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Mob.class)
 public class MobAttributesMixin {
+    @Unique
+    private boolean opmPendingGear;
+    @Unique
+    private boolean opmPendingCavalry;
+    @Unique
+    private boolean opmDistanceGoalInstalled;
 
     @Inject(method = "getControllingPassenger", at = @At("HEAD"), cancellable = true)
     private void ignoreCavalryMobPassenger(CallbackInfoReturnable<LivingEntity> cir) {
@@ -51,8 +57,30 @@ public class MobAttributesMixin {
         Mob mob = (Mob) (Object) this;
         CavalryHelper.tick(mob);
 
-        if (!(mob.level() instanceof ServerLevel level)
-            || !mob.entityTags().contains(OverpoweredMobs.LEGACY_ELYTRA_TAG)) return;
+        if (!(mob.level() instanceof ServerLevel level) || !mob.isAlive()) return;
+        OverpoweredConfig config = OverpoweredMobs.getConfig();
+        if (!opmDistanceGoalInstalled
+            && config.isEnableDistanceSpeed()
+            && mob.entityTags().contains(OverpoweredMobs.BOOSTED_TAG)
+            && (EquipmentHelper.isEquippable(mob.getType()) || mob instanceof Creeper)) {
+            mob.getGoalSelector().addGoal(3, new DistanceSpeedGoal(mob,
+                config.getAggroCloseSpeed(), config.getAggroFarSpeed(), config.getAggroSlowRange()));
+            opmDistanceGoalInstalled = true;
+        }
+        if (opmPendingGear) {
+            opmPendingGear = false;
+            if (config.isEnableGear()) {
+                EquipmentHelper.equipOPGear(mob, level.registryAccess());
+            }
+        }
+        if (opmPendingCavalry) {
+            opmPendingCavalry = false;
+            if (config.isEnableCavalry()) {
+                trySpawnCavalry(mob, level, level.getCurrentDifficultyAt(mob.blockPosition()));
+            }
+        }
+
+        if (!mob.entityTags().contains(OverpoweredMobs.LEGACY_ELYTRA_TAG)) return;
 
         mob.stopFallFlying();
         mob.removeTag(OverpoweredMobs.LEGACY_ELYTRA_TAG);
@@ -95,14 +123,6 @@ public class MobAttributesMixin {
         OverpoweredMobs.tryApplyElite(mob);
 
         if (level instanceof ServerLevel serverLevel) {
-            if (config.isEnableDistanceSpeed()
-                && (EquipmentHelper.isEquippable(mob.getType()) || mob instanceof Creeper)) {
-                mob.getGoalSelector().addGoal(3, new DistanceSpeedGoal(mob,
-                    config.getAggroCloseSpeed(),
-                    config.getAggroFarSpeed(),
-                    config.getAggroSlowRange()));
-            }
-
             if (config.isEnableAlertSound() && EquipmentHelper.isEquippable(mob.getType())) {
                 double rangeSq = config.getBossBarRange() * config.getBossBarRange();
                 if (OverpoweredMobs.isHostileNearby(serverLevel, mob, rangeSq)) {
@@ -110,14 +130,12 @@ public class MobAttributesMixin {
                         SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.0f, 1.0f);
                 }
             }
-
-            if (config.isEnableGear()) {
-                equipGear(mob, serverLevel);
-            }
-            if (config.isEnableCavalry()) {
-                trySpawnCavalry(mob, serverLevel, difficulty, reason);
-            }
         }
+
+        // Subclass finalizeSpawn methods can still replace equipment or create jockeys.
+        // Apply these systems on the first tick after the complete spawn has finished.
+        opmPendingGear = config.isEnableGear();
+        opmPendingCavalry = config.isEnableCavalry();
     }
 
     @Unique
@@ -137,16 +155,8 @@ public class MobAttributesMixin {
     }
 
     @Unique
-    private static void equipGear(Mob mob, ServerLevel level) {
-        level.getServer().execute(() -> {
-            if (!mob.isAlive()) return;
-            OverpoweredMobsLogger.info("  -> equipping gear (deferred) for " + mob.getType());
-            EquipmentHelper.equipOPGear(mob, level.registryAccess());
-        });
-    }
-
-    @Unique
-    private static void trySpawnCavalry(Mob rider, ServerLevel level, DifficultyInstance difficulty, EntitySpawnReason reason) {
+    private static void trySpawnCavalry(Mob rider, ServerLevel level, DifficultyInstance difficulty) {
+        if (rider.isPassenger()) return;
         Identifier riderKey = BuiltInRegistries.ENTITY_TYPE.getKey(rider.getType());
         if (riderKey == null) return;
 
@@ -157,7 +167,7 @@ public class MobAttributesMixin {
 
             Identifier mountKey = Identifier.tryParse(entry.mount());
             if (mountKey == null) continue;
-            EntityType<?> mountType = BuiltInRegistries.ENTITY_TYPE.getValue(mountKey);
+            EntityType<?> mountType = BuiltInRegistries.ENTITY_TYPE.getOptional(mountKey).orElse(null);
             if (mountType == null) continue;
 
             var mountEntity = mountType.create(level, EntitySpawnReason.JOCKEY);
@@ -169,7 +179,10 @@ public class MobAttributesMixin {
             mount.setPos(rider.getX(), rider.getY(), rider.getZ());
             mount.addTag(OverpoweredMobs.CAVALRY_MOUNT_TAG);
             mount.finalizeSpawn(level, difficulty, EntitySpawnReason.JOCKEY, null);
-            level.addFreshEntity(mount);
+            if (!level.addFreshEntity(mount)) {
+                mount.discard();
+                continue;
+            }
 
             if (entry.baby() && rider instanceof Zombie zombie) {
                 zombie.setBaby(true);

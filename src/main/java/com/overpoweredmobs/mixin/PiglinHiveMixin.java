@@ -39,7 +39,7 @@ public class PiglinHiveMixin {
         if (!config.isTestMode() && mob.getRandom().nextDouble() >= config.getPiglinHiveChance()) return;
 
         Player nearest = level.getNearestPlayer(mob.getX(), mob.getY(), mob.getZ(),
-            config.getPiglinHiveRange(), player -> player.isAlive()
+            config.getPiglinHiveRange(), entity -> entity instanceof Player player && player.isAlive()
                 && !player.isCreative() && !player.isSpectator());
         if (nearest == null) return;
 

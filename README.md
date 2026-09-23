@@ -13,10 +13,10 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 - **Dimension Multipliers** — Per-dimension stat scaling (e.g., nerf overworld, buff nether)
 
 ### Gear & Combat
-- **OP Enchanted Gear** — Equippable mobs get full netherite armor (Protection X) + OP weapons — gear never drops
+- **OP Enchanted Gear** — Equippable mobs get full netherite armor (Protection X) + OP weapons — gear never drops; pillagers retain crossbows
 - **Custom Weapon Config** — Per-mob weapon + enchantment overrides (Drowned defaults to Trident + Impaling X)
 - **Piglin Gold Armor** — Piglins get gold armor instead of netherite; brutes have 50% gear chance
-- **Ranged Attack Speed** — Skeletons, strays, bogged, and parched shoot faster
+- **Ranged Attack Speed** — Boosted skeletons, strays, bogged, and parched shoot faster
 - **Shield Gear** — Equippable hostile mobs can roll a vanilla shield in the off hand
 - **Second Life** — A rare totem roll lets a hostile mob survive one lethal hit
 
@@ -55,6 +55,7 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 ## Config
 
 `config/overpoweredmobs.json` is auto-generated on first launch.
+Per-mob entries inherit the stat multipliers in `defaults` unless they specify an override.
 
 ### Default multipliers
 
@@ -71,6 +72,7 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 
 ```json
 {
+  "configFormatVersion": 2,
   "enableGear": true,
   "enableCavalry": true,
   "enablePinata": true,
@@ -152,7 +154,7 @@ All `/opm` commands require **operator** permission.
 | `/opm reload`                          | Reload config from disk          |
 | `/opm reset`                           | Reset config to defaults         |
 | `/opm test`                            | Toggle test mode (100% odds)     |
-| `/opm bloodmoon`                       | Trigger a blood moon immediately  |
+| `/opm bloodmoon`                       | Trigger a blood moon during the night in a sky-lit dimension |
 | `/opm cavalry <rider> <mount>`         | Spawn a rider on a mount for testing |
 
 `<attr>` may be `health`, `damage`, `speed`, `armor`, `followRange`, `xp`, or `spawnchance`.

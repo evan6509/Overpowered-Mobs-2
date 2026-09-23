@@ -36,6 +36,7 @@ public class OverpoweredMobs implements ModInitializer {
     public static final String PINATA_TAG = "opm_pinata";
     public static final String CAVALRY_MOUNT_TAG = "opm_cavalry_mount";
     public static final String HORDE_TAG = "opm_horde";
+    public static final String STRONGHOLD_BOOST_TAG = "opm_stronghold_boost";
     public static final String ELITE_TAG = "opm_elite";
     public static final String LEGACY_ELYTRA_TAG = "opm_elytra";
     public static final String CHAIN_PRIMED_TAG = "opm_chain_primed";
@@ -78,10 +79,6 @@ public class OverpoweredMobs implements ModInitializer {
             }
         }
         multiplyAttribute(mob, Attributes.FOLLOW_RANGE, followRangeMult);
-
-        if (EquipmentHelper.isRangedMob(type)) {
-            multiplyAttribute(mob, Attributes.ATTACK_SPEED, config.getRangedAttackSpeedMultiplier());
-        }
 
         if (type == BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.tryParse("minecraft:silverfish"))) {
             var speed = mob.getAttribute(Attributes.MOVEMENT_SPEED);
@@ -174,14 +171,6 @@ public class OverpoweredMobs implements ModInitializer {
             if (!config.isTestMode() && zombie.getRandom().nextDouble() >= chance) return;
 
             int count = config.getZombiePinataCount();
-            int nearbyPlayers = 0;
-            for (ServerPlayer player : serverLevel.players()) {
-                if (player.distanceToSqr(zombie) < 400.0) nearbyPlayers++;
-            }
-            if (nearbyPlayers > 1) {
-                count = 3;
-            }
-
             DifficultyInstance difficulty = serverLevel.getCurrentDifficultyAt(zombie.blockPosition());
             for (int i = 0; i < count; i++) {
                 Zombie baby = (Zombie) zombie.getType().create(serverLevel, EntitySpawnReason.TRIGGERED);

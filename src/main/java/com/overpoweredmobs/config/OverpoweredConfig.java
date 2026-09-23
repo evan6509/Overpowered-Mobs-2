@@ -25,6 +25,10 @@ import java.util.Map;
 public class OverpoweredConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("overpoweredmobs.json");
+    private static final int CONFIG_FORMAT_VERSION = 2;
+
+    // Absent in older files. Keep this nullable so they can be migrated once.
+    private Integer configFormatVersion;
 
     private boolean enableGear = true;
     private boolean enableCavalry = true;
@@ -56,7 +60,7 @@ public class OverpoweredConfig {
     private boolean enableWaterEndermen = true;
     private Map<String, Double> dimensions = new HashMap<>();
     private Map<String, MobConfig> mobs = new HashMap<>(defaultMobOverrides());
-    private MobConfig defaults = new MobConfig();
+    private MobConfig defaults = MobConfig.defaults();
     private List<CavalryEntry> cavalry = defaultCavalry();
     private double spawnChance = 0.05;
     private double hordeSpeedMultiplier = 1.0;
@@ -158,7 +162,11 @@ public class OverpoweredConfig {
         Identifier key = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         if (key != null) {
             MobConfig specific = mobs.get(key.toString());
-            if (specific != null) return specific;
+            if (specific != null) {
+                MobConfig effective = defaults.copy();
+                effective.apply(specific);
+                return effective;
+            }
         }
         return defaults;
     }
@@ -167,7 +175,9 @@ public class OverpoweredConfig {
         Identifier key = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         if (key != null) {
             MobConfig specific = mobs.get(key.toString());
-            if (specific != null && specific.spawnChance >= 0) return specific.spawnChance;
+            if (specific != null && specific.spawnChance != null && specific.spawnChance >= 0) {
+                return specific.spawnChance;
+            }
         }
         return spawnChance;
     }
@@ -214,6 +224,21 @@ public class OverpoweredConfig {
         }
     }
 
+    public void setMobAttribute(EntityType<?> type, String attr, double value) {
+        Identifier key = BuiltInRegistries.ENTITY_TYPE.getKey(type);
+        if (key == null) return;
+        MobConfig specific = mobs.computeIfAbsent(key.toString(), ignored -> new MobConfig());
+        specific.set(attr, value);
+    }
+
+    public MobConfig getEffectiveFor(String entityId) {
+        MobConfig specific = mobs.get(entityId);
+        if (specific == null) return defaults;
+        MobConfig effective = defaults.copy();
+        effective.apply(specific);
+        return effective;
+    }
+
     public void setDefault(String attr, double value) {
         defaults.set(attr, value);
     }
@@ -233,6 +258,9 @@ public class OverpoweredConfig {
                 Type type = new TypeToken<OverpoweredConfig>(){}.getType();
                 OverpoweredConfig config = GSON.fromJson(reader, type);
                 if (config != null) {
+                    if (config.configFormatVersion == null) {
+                        config.migrateLegacyMobOverrides();
+                    }
                     config.normalize();
                     return config;
                 }
@@ -258,9 +286,10 @@ public class OverpoweredConfig {
     }
 
     private void normalize() {
+        configFormatVersion = CONFIG_FORMAT_VERSION;
         if (dimensions == null) dimensions = new HashMap<>();
         if (mobs == null) mobs = new HashMap<>(defaultMobOverrides());
-        if (defaults == null) defaults = new MobConfig();
+        if (defaults == null) defaults = MobConfig.defaults();
         if (cavalry == null) cavalry = defaultCavalry();
 
         defaults.clamp();
@@ -322,6 +351,15 @@ public class OverpoweredConfig {
         zombiePinataCount = clampCount(zombiePinataCount);
     }
 
+    private void migrateLegacyMobOverrides() {
+        if (mobs == null) return;
+        // Old saves wrote every multiplier into each entry, including untouched defaults.
+        // Values identical to the shipped defaults could also have been set intentionally.
+        for (MobConfig current : mobs.values()) {
+            if (current != null) current.clearLegacyDefaultMultipliers();
+        }
+    }
+
     private static double clampChance(double value) {
         if (!Double.isFinite(value)) return 0.0;
         return Math.max(0.0, Math.min(1.0, value));
@@ -356,22 +394,22 @@ public class OverpoweredConfig {
     }
 
     public static class MobConfig {
-        private double healthMultiplier = 2.0;
-        private double damageMultiplier = 2.0;
-        private double speedMultiplier = 1.0;
-        private double armorMultiplier = 2.0;
-        private double followRangeMultiplier = 2.0;
-        private double xpMultiplier = 3.0;
-        private double spawnChance = -1.0;
+        private Double healthMultiplier;
+        private Double damageMultiplier;
+        private Double speedMultiplier;
+        private Double armorMultiplier;
+        private Double followRangeMultiplier;
+        private Double xpMultiplier;
+        private Double spawnChance;
         private String weapon;
         private Map<String, Integer> weaponEnchantments;
 
-        public double healthMultiplier() { return healthMultiplier; }
-        public double damageMultiplier() { return damageMultiplier; }
-        public double speedMultiplier() { return speedMultiplier; }
-        public double armorMultiplier() { return armorMultiplier; }
-        public double followRangeMultiplier() { return followRangeMultiplier; }
-        public double xpMultiplier() { return xpMultiplier; }
+        public double healthMultiplier() { return healthMultiplier != null ? healthMultiplier : 2.0; }
+        public double damageMultiplier() { return damageMultiplier != null ? damageMultiplier : 2.0; }
+        public double speedMultiplier() { return speedMultiplier != null ? speedMultiplier : 1.0; }
+        public double armorMultiplier() { return armorMultiplier != null ? armorMultiplier : 2.0; }
+        public double followRangeMultiplier() { return followRangeMultiplier != null ? followRangeMultiplier : 2.0; }
+        public double xpMultiplier() { return xpMultiplier != null ? xpMultiplier : 3.0; }
         public String weapon() { return weapon; }
         public Map<String, Integer> weaponEnchantments() { return weaponEnchantments; }
 
@@ -381,6 +419,38 @@ public class OverpoweredConfig {
         public void setArmorMultiplier(double v) { armorMultiplier = v; }
         public void setFollowRangeMultiplier(double v) { followRangeMultiplier = v; }
         public void setXpMultiplier(double v) { xpMultiplier = v; }
+
+        private static MobConfig defaults() {
+            MobConfig config = new MobConfig();
+            config.healthMultiplier = 2.0;
+            config.damageMultiplier = 2.0;
+            config.speedMultiplier = 1.0;
+            config.armorMultiplier = 2.0;
+            config.followRangeMultiplier = 2.0;
+            config.xpMultiplier = 3.0;
+            return config;
+        }
+
+        private void apply(MobConfig override) {
+            if (override.healthMultiplier != null) healthMultiplier = override.healthMultiplier;
+            if (override.damageMultiplier != null) damageMultiplier = override.damageMultiplier;
+            if (override.speedMultiplier != null) speedMultiplier = override.speedMultiplier;
+            if (override.armorMultiplier != null) armorMultiplier = override.armorMultiplier;
+            if (override.followRangeMultiplier != null) followRangeMultiplier = override.followRangeMultiplier;
+            if (override.xpMultiplier != null) xpMultiplier = override.xpMultiplier;
+            if (override.spawnChance != null) spawnChance = override.spawnChance;
+            if (override.weapon != null) weapon = override.weapon;
+            if (override.weaponEnchantments != null) weaponEnchantments = new HashMap<>(override.weaponEnchantments);
+        }
+
+        private void clearLegacyDefaultMultipliers() {
+            if (Double.valueOf(2.0).equals(healthMultiplier)) healthMultiplier = null;
+            if (Double.valueOf(2.0).equals(damageMultiplier)) damageMultiplier = null;
+            if (Double.valueOf(1.0).equals(speedMultiplier)) speedMultiplier = null;
+            if (Double.valueOf(2.0).equals(armorMultiplier)) armorMultiplier = null;
+            if (Double.valueOf(2.0).equals(followRangeMultiplier)) followRangeMultiplier = null;
+            if (Double.valueOf(3.0).equals(xpMultiplier)) xpMultiplier = null;
+        }
 
         public MobConfig copy() {
             MobConfig copy = new MobConfig();
@@ -399,15 +469,15 @@ public class OverpoweredConfig {
         }
 
         public void clamp() {
-            healthMultiplier = clampMultiplier(healthMultiplier);
-            damageMultiplier = clampMultiplier(damageMultiplier);
-            speedMultiplier = clampMultiplier(speedMultiplier);
-            armorMultiplier = clampMultiplier(armorMultiplier);
-            followRangeMultiplier = clampMultiplier(followRangeMultiplier);
-            xpMultiplier = clampMultiplier(xpMultiplier);
-            if (!Double.isFinite(spawnChance)) {
+            if (healthMultiplier != null) healthMultiplier = clampMultiplier(healthMultiplier);
+            if (damageMultiplier != null) damageMultiplier = clampMultiplier(damageMultiplier);
+            if (speedMultiplier != null) speedMultiplier = clampMultiplier(speedMultiplier);
+            if (armorMultiplier != null) armorMultiplier = clampMultiplier(armorMultiplier);
+            if (followRangeMultiplier != null) followRangeMultiplier = clampMultiplier(followRangeMultiplier);
+            if (xpMultiplier != null) xpMultiplier = clampMultiplier(xpMultiplier);
+            if (spawnChance != null && !Double.isFinite(spawnChance)) {
                 spawnChance = -1.0;
-            } else if (spawnChance >= 0.0) {
+            } else if (spawnChance != null && spawnChance >= 0.0) {
                 spawnChance = clampChance(spawnChance);
             }
             if (weaponEnchantments != null) {
@@ -434,13 +504,13 @@ public class OverpoweredConfig {
 
         public double get(String attr) {
             return switch (attr) {
-                case "health" -> healthMultiplier;
-                case "damage" -> damageMultiplier;
-                case "speed" -> speedMultiplier;
-                case "armor" -> armorMultiplier;
-                case "followRange" -> followRangeMultiplier;
-                case "xp" -> xpMultiplier;
-                case "spawnchance" -> spawnChance;
+                case "health" -> healthMultiplier();
+                case "damage" -> damageMultiplier();
+                case "speed" -> speedMultiplier();
+                case "armor" -> armorMultiplier();
+                case "followRange" -> followRangeMultiplier();
+                case "xp" -> xpMultiplier();
+                case "spawnchance" -> spawnChance != null ? spawnChance : -1.0;
                 default -> 1.0;
             };
         }

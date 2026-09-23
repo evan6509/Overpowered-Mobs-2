@@ -4,6 +4,7 @@ import com.overpoweredmobs.EquipmentHelper;
 import com.overpoweredmobs.OverpoweredMobs;
 import com.overpoweredmobs.config.OverpoweredConfig;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,7 +25,7 @@ public class ArrowDamageMixin {
         AbstractArrow arrow = (AbstractArrow) (Object) this;
         if (!(arrow.getOwner() instanceof Mob owner)
             || !owner.entityTags().contains(OverpoweredMobs.BOOSTED_TAG)
-            || !EquipmentHelper.isRangedMob(owner.getType())) {
+            || !(EquipmentHelper.isRangedMob(owner.getType()) || owner instanceof Pillager)) {
             return damage;
         }
 

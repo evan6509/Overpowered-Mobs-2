@@ -65,22 +65,22 @@ public final class EquipmentHelper {
     public static void equipOPGear(Mob mob, RegistryAccess registryAccess) {
         if (!isEquippable(mob.getType())) return;
 
-        HolderGetter<Enchantment> enchants = registryAccess.lookupOrThrow(Registries.ENCHANTMENT);
         OverpoweredConfig config = OverpoweredMobs.getConfig();
+        if (mob.getType() == et("minecraft:piglin_brute")
+            && !config.isTestMode()
+            && mob.getRandom().nextDouble() >= config.getPiglinBruteGearChance()) {
+            return;
+        }
+
+        HolderGetter<Enchantment> enchants = registryAccess.lookupOrThrow(Registries.ENCHANTMENT);
 
         boolean isPinata = mob.entityTags().contains(OverpoweredMobs.PINATA_TAG);
         if (!isPinata) {
             if (isPiglin(mob.getType())) {
-                if (mob.getType() == et("minecraft:piglin_brute")
-                    && !config.isTestMode()
-                    && mob.getRandom().nextDouble() >= config.getPiglinBruteGearChance()) {
-                    // skip gear for brute
-                } else {
-                    setSlot(mob, EquipmentSlot.HEAD, enchanted(enchants, Items.GOLDEN_HELMET, Enchantments.PROTECTION, 10));
-                    setSlot(mob, EquipmentSlot.CHEST, enchanted(enchants, Items.GOLDEN_CHESTPLATE, Enchantments.PROTECTION, 10));
-                    setSlot(mob, EquipmentSlot.LEGS, enchanted(enchants, Items.GOLDEN_LEGGINGS, Enchantments.PROTECTION, 10));
-                    setSlot(mob, EquipmentSlot.FEET, enchanted(enchants, Items.GOLDEN_BOOTS, Enchantments.PROTECTION, 10));
-                }
+                setSlot(mob, EquipmentSlot.HEAD, enchanted(enchants, Items.GOLDEN_HELMET, Enchantments.PROTECTION, 10));
+                setSlot(mob, EquipmentSlot.CHEST, enchanted(enchants, Items.GOLDEN_CHESTPLATE, Enchantments.PROTECTION, 10));
+                setSlot(mob, EquipmentSlot.LEGS, enchanted(enchants, Items.GOLDEN_LEGGINGS, Enchantments.PROTECTION, 10));
+                setSlot(mob, EquipmentSlot.FEET, enchanted(enchants, Items.GOLDEN_BOOTS, Enchantments.PROTECTION, 10));
             } else {
                 setSlot(mob, EquipmentSlot.HEAD, enchanted(enchants, Items.NETHERITE_HELMET, Enchantments.PROTECTION, 10));
                 setSlot(mob, EquipmentSlot.CHEST, enchanted(enchants, Items.NETHERITE_CHESTPLATE, Enchantments.PROTECTION, 10));
@@ -119,6 +119,9 @@ public final class EquipmentHelper {
         if (isRangedMob(mob.getType())) {
             setSlot(mob, EquipmentSlot.MAINHAND, enchanted(enchants, Items.BOW, Enchantments.POWER, 10, Enchantments.PUNCH, 3, Enchantments.FLAME, 1));
             OverpoweredMobsLogger.info("  -> equipped OP bow");
+        } else if (mob.getType() == et("minecraft:pillager")) {
+            setSlot(mob, EquipmentSlot.MAINHAND, enchanted(enchants, Items.CROSSBOW, Enchantments.QUICK_CHARGE, 3, Enchantments.PIERCING, 4));
+            OverpoweredMobsLogger.info("  -> equipped OP crossbow");
         } else {
             setSlot(mob, EquipmentSlot.MAINHAND, enchanted(enchants, Items.NETHERITE_SWORD, Enchantments.SHARPNESS, 10, Enchantments.FIRE_ASPECT, 3));
             OverpoweredMobsLogger.info("  -> equipped OP sword");

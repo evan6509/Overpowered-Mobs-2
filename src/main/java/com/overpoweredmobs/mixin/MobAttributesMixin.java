@@ -63,8 +63,7 @@ public class MobAttributesMixin {
             && config.isEnableDistanceSpeed()
             && mob.entityTags().contains(OverpoweredMobs.BOOSTED_TAG)
             && (EquipmentHelper.isEquippable(mob.getType()) || mob instanceof Creeper)) {
-            mob.getGoalSelector().addGoal(3, new DistanceSpeedGoal(mob,
-                config.getAggroCloseSpeed(), config.getAggroFarSpeed(), config.getAggroSlowRange()));
+            mob.getGoalSelector().addGoal(3, new DistanceSpeedGoal(mob));
             opmDistanceGoalInstalled = true;
         }
         if (opmPendingGear) {
@@ -98,6 +97,11 @@ public class MobAttributesMixin {
         Mob mob = (Mob) (Object) this;
         if (mob.getType().getCategory() != MobCategory.MONSTER) return;
 
+        boolean forceStrongholdBoost = mob.entityTags().contains(OverpoweredMobs.STRONGHOLD_BOOST_TAG);
+        if (forceStrongholdBoost) {
+            mob.removeTag(OverpoweredMobs.STRONGHOLD_BOOST_TAG);
+            mob.removeTag(OverpoweredMobs.HORDE_TAG);
+        }
         if (mob.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG)
             || mob.entityTags().contains(OverpoweredMobs.HORDE_TAG)) return;
 
@@ -106,8 +110,8 @@ public class MobAttributesMixin {
         OverpoweredConfig config = OverpoweredMobs.getConfig();
 
         double effectiveSpawnChance = config.getSpawnChanceFor(mob.getType());
-        if (BloodMoonManager.shouldForceHorde(mob)
-            || (!config.isTestMode() && mob.getRandom().nextDouble() >= effectiveSpawnChance)) {
+        if (!forceStrongholdBoost && (BloodMoonManager.shouldForceHorde(mob)
+            || (!config.isTestMode() && mob.getRandom().nextDouble() >= effectiveSpawnChance))) {
             OverpoweredMobsLogger.info("  -> horde mode (spawnChance roll failed)");
             applyHordeBuffs(mob, config);
             return;
@@ -135,7 +139,8 @@ public class MobAttributesMixin {
         // Subclass finalizeSpawn methods can still replace equipment or create jockeys.
         // Apply these systems on the first tick after the complete spawn has finished.
         opmPendingGear = config.isEnableGear();
-        opmPendingCavalry = config.isEnableCavalry();
+        // Strongholds can have narrow rooms; a mount may not fit the validated mob space.
+        opmPendingCavalry = config.isEnableCavalry() && !forceStrongholdBoost;
     }
 
     @Unique

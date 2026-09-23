@@ -24,7 +24,7 @@ public final class BloodMoonManager {
 
         Integer remaining = ACTIVE_TICKS.get(level);
         if (remaining != null) {
-            if (remaining <= 1) {
+            if (remaining <= 1 || !isNightOnStartedDay(level)) {
                 ACTIVE_TICKS.remove(level);
                 OverpoweredMobsLogger.info("Blood moon ended in " + level.dimension().identifier());
             } else {
@@ -36,30 +36,31 @@ public final class BloodMoonManager {
             return;
         }
 
-        if (!level.dimensionType().hasSkyLight()) return;
         long time = level.getDefaultClockTime();
         long day = Math.floorDiv(time, 24000L);
-        int timeOfDay = (int) Math.floorMod(time, 24000L);
-        if (timeOfDay < 13000 || timeOfDay >= 23000) return;
+        if (!isNight(level)) return;
         if (day % config.getBloodMoonIntervalNights() != 0) return;
         if (STARTED_DAYS.getOrDefault(level, Long.MIN_VALUE) == day) return;
 
         trigger(level);
     }
 
-    public static void trigger(ServerLevel level) {
+    public static boolean trigger(ServerLevel level) {
         OverpoweredConfig config = OverpoweredMobs.getConfig();
-        if (!config.isEnableBloodMoon()) return;
+        if (!config.isEnableBloodMoon() || !isNight(level)) return false;
 
         long day = Math.floorDiv(level.getDefaultClockTime(), 24000L);
         STARTED_DAYS.put(level, day);
         ACTIVE_TICKS.put(level, config.getBloodMoonDurationTicks());
         telegraph(level, true);
         OverpoweredMobsLogger.info("Blood moon started in " + level.dimension().identifier());
+        return true;
     }
 
     public static boolean isActive(ServerLevel level) {
-        return ACTIVE_TICKS.getOrDefault(level, 0) > 0;
+        return OverpoweredMobs.getConfig().isEnableBloodMoon()
+            && ACTIVE_TICKS.getOrDefault(level, 0) > 0
+            && isNightOnStartedDay(level);
     }
 
     public static boolean shouldForceHorde(Mob mob) {
@@ -70,7 +71,19 @@ public final class BloodMoonManager {
     }
 
     public static int getRemaining(ServerLevel level) {
-        return ACTIVE_TICKS.getOrDefault(level, 0);
+        return isActive(level) ? ACTIVE_TICKS.get(level) : 0;
+    }
+
+    private static boolean isNightOnStartedDay(ServerLevel level) {
+        return isNight(level)
+            && STARTED_DAYS.getOrDefault(level, Long.MIN_VALUE)
+                == Math.floorDiv(level.getDefaultClockTime(), 24000L);
+    }
+
+    private static boolean isNight(ServerLevel level) {
+        if (!level.dimensionType().hasSkyLight()) return false;
+        int timeOfDay = (int) Math.floorMod(level.getDefaultClockTime(), 24000L);
+        return timeOfDay >= 13000 && timeOfDay < 23000;
     }
 
     private static void telegraph(ServerLevel level, boolean loud) {

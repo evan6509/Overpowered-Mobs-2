@@ -1,5 +1,6 @@
 package com.overpoweredmobs;
 
+import com.overpoweredmobs.config.OverpoweredConfig;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Mob;
@@ -15,16 +16,10 @@ public class DistanceSpeedGoal extends Goal {
     private static final double SMOOTHING = 0.15;
 
     private final Mob mob;
-    private final double closeSpeed;
-    private final double farSpeed;
-    private final double slowRange;
     private double currentModifier;
 
-    public DistanceSpeedGoal(Mob mob, double closeSpeed, double farSpeed, double slowRange) {
+    public DistanceSpeedGoal(Mob mob) {
         this.mob = mob;
-        this.closeSpeed = closeSpeed;
-        this.farSpeed = farSpeed;
-        this.slowRange = slowRange;
     }
 
     @Override
@@ -52,8 +47,10 @@ public class DistanceSpeedGoal extends Goal {
         Player player = findNearestPlayer(level);
         if (player == null) return;
 
+        OverpoweredConfig config = OverpoweredMobs.getConfig();
         double dist = mob.distanceTo(player);
-        double targetMps = (dist >= slowRange) ? farSpeed : closeSpeed;
+        double targetMps = (dist >= config.getAggroSlowRange())
+            ? config.getAggroFarSpeed() : config.getAggroCloseSpeed();
         var speed = mob.getAttribute(Attributes.MOVEMENT_SPEED);
         if (speed == null) return;
 
@@ -85,7 +82,7 @@ public class DistanceSpeedGoal extends Goal {
 
     private Player findNearestPlayer(ServerLevel level) {
         double followRange = mob.getAttributeValue(Attributes.FOLLOW_RANGE);
-        double searchRange = Math.max(slowRange + 10.0, followRange);
+        double searchRange = Math.max(OverpoweredMobs.getConfig().getAggroSlowRange() + 10.0, followRange);
         return level.getNearestPlayer(mob, searchRange);
     }
 }

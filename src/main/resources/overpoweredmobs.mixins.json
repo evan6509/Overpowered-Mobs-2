@@ -5,6 +5,7 @@
     "mixins": [
         "MobAttributesMixin",
         "ArrowDamageMixin",
+        "SkeletonBowCooldownMixin",
         "ExperienceMultiplierMixin",
         "DropMultiplierMixin",
         "PinataDespawnMixin",

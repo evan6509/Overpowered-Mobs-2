@@ -87,9 +87,7 @@ public class OPMCommand {
         }
 
         OverpoweredConfig config = OverpoweredMobs.getConfig();
-        OverpoweredConfig.MobConfig cfg = config.getFor(type).copy();
-        cfg.set(attr, value);
-        config.setFor(type, cfg);
+        config.setMobAttribute(type, attr, value);
         config.save();
 
         ctx.getSource().sendSuccess(() ->
@@ -121,7 +119,7 @@ public class OPMCommand {
 
         for (Map.Entry<String, OverpoweredConfig.MobConfig> entry : config.getMobs().entrySet()) {
             String key = entry.getKey();
-            OverpoweredConfig.MobConfig mc = entry.getValue();
+            OverpoweredConfig.MobConfig mc = config.getEffectiveFor(key);
             ctx.getSource().sendSuccess(() ->
                 Component.literal("  " + key + ":"), false);
             for (String attr : STATUS_ATTRS) {
@@ -224,7 +222,10 @@ public class OPMCommand {
             return 0;
         }
 
-        BloodMoonManager.trigger(level);
+        if (!BloodMoonManager.trigger(level)) {
+            ctx.getSource().sendFailure(Component.literal("Blood moon can only start at night in a sky-lit dimension"));
+            return 0;
+        }
         ctx.getSource().sendSuccess(() -> Component.literal("Blood moon triggered"), true);
         return 1;
     }

@@ -2,11 +2,16 @@ package com.overpoweredmobs;
 
 import com.overpoweredmobs.config.OverpoweredConfig;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.EntitySpawnReason;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -87,8 +92,15 @@ public final class BloodMoonManager {
     }
 
     private static void telegraph(ServerLevel level, boolean loud) {
-        level.setSkyFlashTime(loud ? 40 : 5);
         for (ServerPlayer player : level.players()) {
+            var flash = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.withDefaultNamespace("lightning_bolt"))
+                .create(level, EntitySpawnReason.TRIGGERED);
+            if (flash instanceof LightningBolt lightning) {
+                lightning.setPos(player.getX(), player.getY() + 64.0, player.getZ());
+                // Client-only vanilla lightning produces sky flashes without server damage,
+                // fires, rod activation, copper changes or advancement triggers.
+                player.connection.send(new ClientboundAddEntityPacket(lightning, 0, lightning.blockPosition()));
+            }
             level.sendParticles(ParticleTypes.CRIMSON_SPORE,
                 player.getX(), player.getY() + 18.0, player.getZ(),
                 loud ? 35 : 8, 8.0, 2.0, 8.0, 0.02);

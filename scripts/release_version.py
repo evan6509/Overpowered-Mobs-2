@@ -25,7 +25,7 @@ def select_version(releases, commit, tag_commits, base_version):
               and VERSION.fullmatch(r["tag_name"].removeprefix("v"))
               and r["tag_name"].startswith("v")]
     stable.sort(key=lambda r: parse_version(r["tag_name"][1:]))
-    existing = [r for r in stable if tag_commits[r["tag_name"]] == commit]
+    existing = [r for r in stable if tag_commits.get(r["tag_name"]) == commit]
     if existing:
         return existing[-1]["tag_name"][1:]
     if not stable:
@@ -50,9 +50,20 @@ def main():
         tag = release["tag_name"]
         if release.get("prerelease") or not tag.startswith("v") or not VERSION.fullmatch(tag[1:]):
             continue
-        # Includes drafts so a failed publication can resume its reserved version.
-        tag_commits[tag] = subprocess.check_output(
-            ["git", "rev-parse", "--verify", f"refs/tags/{tag}^{{commit}}"], text=True).strip()
+        # Drafts can precede their tags, and published tags can be deleted.
+        # Only an immutable commit target is safe to reuse; mutable branches
+        # reserve a version but cannot establish what an earlier run built.
+        resolved = subprocess.run(
+            ["git", "rev-parse", "--verify", "--quiet", f"refs/tags/{tag}^{{commit}}"],
+            text=True, capture_output=True, check=False)
+        if resolved.returncode == 0:
+            tag_commits[tag] = resolved.stdout.strip()
+        elif re.fullmatch(r"[0-9a-fA-F]{40}", release.get("target_commitish", "")):
+            target = subprocess.run(
+                ["git", "rev-parse", "--verify", "--quiet", f'{release["target_commitish"]}^{{commit}}'],
+                text=True, capture_output=True, check=False)
+            if target.returncode == 0:
+                tag_commits[tag] = target.stdout.strip()
     version = select_version(releases, os.environ["GITHUB_SHA"], tag_commits, properties["mod_version"])
     with open(os.environ["GITHUB_ENV"], "a") as env:
         env.write(f"OPM_VERSION={version}\n")

@@ -13,7 +13,7 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 - **Dimension Multipliers** — Per-dimension stat scaling (e.g., nerf overworld, buff nether)
 
 ### Gear & Combat
-- **OP Enchanted Gear** — Equippable mobs get full netherite armor (Protection X) + OP weapons — gear never drops; pillagers retain crossbows
+- **OP Enchanted Gear** — Equippable mobs get full netherite armor (Protection X) + OP weapons — regular gear never drops; elite gear is preserved on death. Pillagers retain crossbows and illusioners retain bows
 - **Custom Weapon Config** — Per-mob weapon + enchantment overrides (Drowned defaults to Trident + Impaling X)
 - **Piglin Gold Armor** — Piglins get gold armor instead of netherite; brutes have 50% gear chance
 - **Ranged Attack Speed** — Boosted skeletons, strays, bogged, and parched shoot faster
@@ -32,12 +32,12 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 - **Parched** — Desert skeleton variant gets a bow like other skeletons
 
 ### Aggression & Awareness
-- **Distance Speed System** — Boosted mobs move faster the farther they are from the player (5.6 m/s close, 8.4 m/s far, configurable)
+- **Distance Speed System** — Boosted mobs use configurable close/far speed targets (5.6/8.4 nominal m/s), with stat multipliers and potion effects applied on top; actual movement also depends on navigation and physics
 - **Alert Sound** — Wither spawn sound plays when a boosted equippable mob spawns near a player
 - **Boss Bar** — Per-player boss bar tracking the nearest boosted mob's HP (color-coded)
 - **Mob Name Tags** — Boosted mobs display a red `⚡ Overpowered {MobName}` name tag
 - **Zombified Piglin Hivemind** — Zombified piglins periodically anger nearby piglins (10% chance per second)
-- **Angry Wolves** — All wolves spawn permanently angry at the nearest player
+- **Angry Wolves** — Wild wolves remain angry at nearby survival/adventure players, including wolves from newly generated chunks
 - **Water-resistant Endermen** — Endermen no longer take damage from water or rain
 - **Enderman Teleport Strike** — Endermen can blink near their combat target and strike on a cooldown
 - **Creeper Chain Detonation** — Charged creeper explosions prime nearby charged creepers in sequence
@@ -55,6 +55,7 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 ## Config
 
 `config/overpoweredmobs.json` is auto-generated on first launch.
+Invalid config files are preserved. Failed reloads retain the current settings and report an error; an invalid file at startup uses defaults in memory until the file is corrected. Saves use atomic replacement where supported.
 Per-mob entries inherit the stat multipliers in `defaults` unless they specify an override.
 
 ### Default multipliers

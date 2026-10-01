@@ -1,6 +1,6 @@
 package com.overpoweredmobs.mixin.client;
 
-import com.overpoweredmobs.OverpoweredMobs;
+import com.overpoweredmobs.CavalryHelper;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Mth;
@@ -25,7 +25,7 @@ public abstract class CavalryRiderRendererMixin {
         CallbackInfo ci
     ) {
         if (!(entity instanceof Mob) || !(entity.getVehicle() instanceof Mob mount)
-            || !mount.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG)) return;
+            || !CavalryHelper.isCavalryMount(mount)) return;
 
         state.bodyRot = Mth.rotLerp(partialTick, mount.yBodyRotO, mount.yBodyRot);
         state.yRot = 0.0f;

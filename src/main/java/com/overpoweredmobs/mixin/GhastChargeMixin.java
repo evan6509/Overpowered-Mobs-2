@@ -31,7 +31,7 @@ public class GhastChargeMixin {
 
         OverpoweredConfig config = OverpoweredMobs.getConfig();
         double speedMult = config.getRangedAttackSpeedMultiplier();
-        if (speedMult <= 1.0) {
+        if (speedMult == 1.0) {
             opm_chargeFraction = 0.0;
             return increment;
         }
@@ -42,6 +42,8 @@ public class GhastChargeMixin {
 
         // Vanilla uses equality checks for its sound and shot, so never skip either tick.
         int nextEvent = chargeTime < 10 ? 10 : 20;
+        // A zero step must not repeat vanilla's equality-triggered sound or shot.
+        if (chargeTime == 10) step = Math.max(1, step);
         return Math.min(step, nextEvent - chargeTime);
     }
 }

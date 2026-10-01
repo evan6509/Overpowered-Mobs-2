@@ -6,6 +6,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.player.Player;
 
@@ -16,10 +19,14 @@ public class DistanceSpeedGoal extends Goal {
     private static final double SMOOTHING = 0.15;
 
     private final Mob mob;
+    private final double referenceSpeed;
     private double currentModifier;
 
+    @SuppressWarnings("unchecked")
     public DistanceSpeedGoal(Mob mob) {
         this.mob = mob;
+        referenceSpeed = DefaultAttributes.getSupplier((EntityType<? extends LivingEntity>) mob.getType())
+            .getBaseValue(Attributes.MOVEMENT_SPEED);
     }
 
     @Override
@@ -55,11 +62,11 @@ public class DistanceSpeedGoal extends Goal {
         if (speed == null) return;
 
         speed.removeModifier(SPEED_MODIFIER_ID);
-        double unmodifiedSpeed = speed.getValue();
-        if (unmodifiedSpeed <= 0.0) return;
+        if (referenceSpeed <= 0.0) return;
 
         double targetAttributeValue = targetMps / TICKS_PER_SECOND;
-        double targetModifier = targetAttributeValue / unmodifiedSpeed - 1.0;
+        // Normalize against vanilla speed so configured boosts and potion effects still apply.
+        double targetModifier = targetAttributeValue / referenceSpeed - 1.0;
         currentModifier += (targetModifier - currentModifier) * SMOOTHING;
         speed.addOrUpdateTransientModifier(new AttributeModifier(
             SPEED_MODIFIER_ID,

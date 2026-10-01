@@ -23,6 +23,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.phys.AABB;
 
@@ -47,8 +48,15 @@ public class OverpoweredMobs implements ModInitializer {
         return config;
     }
 
-    public static void loadConfig() {
-        config = OverpoweredConfig.load();
+    public static boolean loadConfig() {
+        try {
+            config = OverpoweredConfig.load();
+            return true;
+        } catch (IllegalStateException e) {
+            LOGGER.error("Config load failed; keeping current settings and preserving the file", e);
+            if (config == null) config = new OverpoweredConfig();
+            return false;
+        }
     }
 
     public static void applyBoosts(Mob mob) {
@@ -102,6 +110,12 @@ public class OverpoweredMobs implements ModInitializer {
         if (!config.isEnableEliteMobs() || mob.entityTags().contains(ELITE_TAG)) return;
         if (!config.isTestMode() && mob.getRandom().nextDouble() >= config.getEliteChance()) return;
 
+        applyElite(mob);
+    }
+
+    public static void applyElite(Mob mob) {
+        if (mob.entityTags().contains(ELITE_TAG)) return;
+
         multiplyAttribute(mob, Attributes.MAX_HEALTH, config.getEliteHealthMultiplier());
         multiplyAttribute(mob, Attributes.ATTACK_DAMAGE, config.getEliteDamageMultiplier());
         multiplyAttribute(mob, Attributes.MOVEMENT_SPEED, config.getEliteSpeedMultiplier());
@@ -141,7 +155,11 @@ public class OverpoweredMobs implements ModInitializer {
         if (multiplier == 1.0) return;
         var instance = mob.getAttribute(attribute);
         if (instance != null) {
-            instance.setBaseValue(instance.getBaseValue() * multiplier);
+            // Persist scaling separately from vanilla bases, which size changes can reset.
+            Identifier id = Identifier.fromNamespaceAndPath(MOD_ID,
+                mob.entityTags().contains(BOOSTED_TAG) ? "elite_stats" : "boost_stats");
+            instance.addOrReplacePermanentModifier(new AttributeModifier(id, multiplier - 1.0,
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         }
     }
 
@@ -176,13 +194,12 @@ public class OverpoweredMobs implements ModInitializer {
                 Zombie baby = (Zombie) zombie.getType().create(serverLevel, EntitySpawnReason.TRIGGERED);
                 if (baby == null) continue;
 
-                double ox = (zombie.getRandom().nextDouble() - 0.5) * 5.0;
-                double oz = (zombie.getRandom().nextDouble() - 0.5) * 5.0;
-                baby.setPos(zombie.getX() + ox, zombie.getY(), zombie.getZ() + oz);
                 baby.setBaby(true);
+                baby.setPos(zombie.position());
                 baby.addTag(PINATA_TAG);
-                baby.finalizeSpawn(serverLevel, difficulty, EntitySpawnReason.TRIGGERED, null);
-                serverLevel.addFreshEntity(baby);
+                baby.finalizeSpawn(serverLevel, difficulty, EntitySpawnReason.TRIGGERED,
+                    new Zombie.ZombieGroupData(true, false));
+                if (!SpawnSafety.findNearbyFloor(serverLevel, baby, zombie) || !serverLevel.addFreshEntity(baby)) baby.discard();
             }
 
             serverLevel.playSound(null, zombie.getX(), zombie.getY(), zombie.getZ(),

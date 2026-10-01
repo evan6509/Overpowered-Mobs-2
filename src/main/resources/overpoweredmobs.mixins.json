@@ -4,7 +4,7 @@
     "compatibilityLevel": "JAVA_21",
     "mixins": [
         "MobAttributesMixin",
-        "ArrowDamageMixin",
+        "SpecialAttackDamageMixin",
         "SkeletonBowCooldownMixin",
         "ExperienceMultiplierMixin",
         "DropMultiplierMixin",
@@ -22,6 +22,7 @@
         "PhantomSpawnerMixin",
         "PhantomAccessor",
         "WardenSensorMixin",
+        "WardenEventDispatchMixin",
         "LargeFireballAccessor",
         "CreeperAccessor"
     ],

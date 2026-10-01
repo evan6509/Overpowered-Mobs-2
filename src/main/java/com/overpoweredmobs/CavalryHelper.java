@@ -17,15 +17,21 @@ public final class CavalryHelper {
     }
 
     public static void tick(Mob mob) {
-        if (mob.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG)) {
+        if (isCavalryMount(mob)) {
             syncMount(mob);
         }
 
         if (!(mob.getVehicle() instanceof Mob mount)
-            || !mount.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG)) return;
+            || !isCavalryMount(mount)) return;
 
         if (mob.level() instanceof ServerLevel) ensureGoal(mob, mount);
         syncRider(mob, mount);
+    }
+
+    public static boolean isCavalryMount(Mob mount) {
+        // Passenger links are vanilla synchronized data; scoreboard tags are server-only.
+        if (!(mount.level() instanceof ServerLevel)) return mount.getFirstPassenger() instanceof Mob;
+        return mount.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG);
     }
 
     private static void ensureGoal(Mob rider, Mob mount) {

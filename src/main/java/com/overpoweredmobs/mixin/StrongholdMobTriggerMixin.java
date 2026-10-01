@@ -67,8 +67,7 @@ public class StrongholdMobTriggerMixin {
 
             mob.addTag(OverpoweredMobs.STRONGHOLD_BOOST_TAG);
             mob.finalizeSpawn(level, level.getCurrentDifficultyAt(spawnPos), EntitySpawnReason.TRIGGERED, null);
-            // The marker should have been consumed by MobAttributesMixin during finalizeSpawn.
-            mob.removeTag(OverpoweredMobs.STRONGHOLD_BOOST_TAG);
+            // First-tick initialization consumes the marker after vanilla spawn setup.
             if (level.addFreshEntity(mob)) {
                 spawned++;
             } else {

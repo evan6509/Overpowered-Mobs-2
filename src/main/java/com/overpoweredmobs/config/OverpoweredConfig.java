@@ -12,11 +12,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -264,8 +265,9 @@ public class OverpoweredConfig {
                     config.normalize();
                     return config;
                 }
+                throw new JsonParseException("Config must contain a JSON object");
             } catch (IOException | JsonParseException | IllegalStateException e) {
-                OverpoweredMobs.LOGGER.error("Failed to load config", e);
+                throw new IllegalStateException("Failed to load config; original file preserved", e);
             }
         }
         OverpoweredConfig config = new OverpoweredConfig();
@@ -275,13 +277,28 @@ public class OverpoweredConfig {
     }
 
     public void save() {
+        Path temporary = null;
         try {
             Files.createDirectories(CONFIG_PATH.getParent());
-            try (FileWriter writer = new FileWriter(CONFIG_PATH.toFile())) {
+            temporary = Files.createTempFile(CONFIG_PATH.getParent(), "overpoweredmobs-", ".tmp");
+            try (var writer = Files.newBufferedWriter(temporary)) {
                 GSON.toJson(this, writer);
+            }
+            try {
+                Files.move(temporary, CONFIG_PATH, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temporary, CONFIG_PATH, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
             OverpoweredMobs.LOGGER.error("Failed to save config", e);
+        } finally {
+            if (temporary != null) {
+                try {
+                    Files.deleteIfExists(temporary);
+                } catch (IOException e) {
+                    OverpoweredMobs.LOGGER.warn("Failed to remove temporary config", e);
+                }
+            }
         }
     }
 

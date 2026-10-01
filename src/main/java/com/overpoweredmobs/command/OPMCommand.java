@@ -96,7 +96,10 @@ public class OPMCommand {
     }
 
     private static int executeReload(CommandContext<CommandSourceStack> ctx) {
-        OverpoweredMobs.loadConfig();
+        if (!OverpoweredMobs.loadConfig()) {
+            ctx.getSource().sendFailure(Component.literal("Config reload failed; current settings and the original file were preserved. See the server log."));
+            return 0;
+        }
         ctx.getSource().sendSuccess(() ->
             Component.literal("Config reloaded"), true);
         return 1;
@@ -194,6 +197,13 @@ public class OPMCommand {
         }
         finalizeCavalryMob(rider, level, difficulty);
         mount.positionRider(rider);
+
+        if (!com.overpoweredmobs.SpawnSafety.canFitCavalry(level, rider, mount)) {
+            rider.discard();
+            mount.discard();
+            ctx.getSource().sendFailure(Component.literal("Not enough safe space for cavalry"));
+            return 0;
+        }
 
         if (!level.addFreshEntity(mount) || !level.addFreshEntity(rider)) {
             rider.discard();

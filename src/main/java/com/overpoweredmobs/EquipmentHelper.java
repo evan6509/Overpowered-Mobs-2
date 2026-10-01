@@ -132,12 +132,14 @@ public final class EquipmentHelper {
         return type == et("minecraft:skeleton")
             || type == et("minecraft:stray")
             || type == et("minecraft:bogged")
-            || type == et("minecraft:parched");
+            || type == et("minecraft:parched")
+            || type == et("minecraft:illusioner");
     }
 
     private static void setSlot(Mob mob, EquipmentSlot slot, ItemStack stack) {
         mob.setItemSlot(slot, stack);
-        mob.setDropChance(slot, OverpoweredMobs.isElite(mob) ? 1.0f : 0.0f);
+        // Values greater than one preserve equipment through every death, including durability.
+        mob.setDropChance(slot, OverpoweredMobs.isElite(mob) ? 2.0f : 0.0f);
     }
 
     @SuppressWarnings("unchecked")

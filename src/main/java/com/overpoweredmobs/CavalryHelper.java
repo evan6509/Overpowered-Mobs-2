@@ -1,6 +1,7 @@
 package com.overpoweredmobs;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 
 public final class CavalryHelper {
@@ -44,17 +45,26 @@ public final class CavalryHelper {
     }
 
     private static void syncMount(Mob mount) {
-        float mountYaw = mount.getYRot();
+        float mountYaw = Mth.wrapDegrees(mount.getYRot());
         mount.setYBodyRot(mountYaw);
         mount.setYHeadRot(mountYaw);
+        // Vanilla already normalized these before our post-AI rotation change.
+        mount.yBodyRotO = mountYaw - Mth.wrapDegrees(mountYaw - mount.yBodyRotO);
+        mount.yHeadRotO = mountYaw - Mth.wrapDegrees(mountYaw - mount.yHeadRotO);
     }
 
     private static void syncRider(Mob rider, Mob mount) {
         rider.getNavigation().stop();
-        float mountYaw = mount.getYRot();
+        float mountYaw = Mth.wrapDegrees(mount.getYRot());
         rider.setYRot(mountYaw);
         rider.setYBodyRot(mountYaw);
         rider.setYHeadRot(mountYaw);
         rider.setXRot(mount.getXRot());
+        // Copy the mount's previous rotation as well as its current rotation.
+        // The rider's own AI/network interpolation must not introduce a second turn.
+        rider.yRotO = mountYaw - Mth.wrapDegrees(mountYaw - mount.yRotO);
+        rider.yBodyRotO = mountYaw - Mth.wrapDegrees(mountYaw - mount.yBodyRotO);
+        rider.yHeadRotO = mountYaw - Mth.wrapDegrees(mountYaw - mount.yHeadRotO);
+        rider.xRotO = mount.xRotO;
     }
 }

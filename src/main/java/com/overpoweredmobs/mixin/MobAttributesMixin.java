@@ -62,6 +62,12 @@ public class MobAttributesMixin {
                 OverpoweredMobsLogger.info("Removed legacy elytra gear from " + mob.getType());
             }
         }
-        CavalryHelper.tick(mob);
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void stabilizeCavalryAfterAi(CallbackInfo ci) {
+        // Movement/look controls and body rotation run inside LivingEntity.tick.
+        // Applying this at HEAD lets them overwrite the rider's synchronized rotation.
+        CavalryHelper.tick((Mob) (Object) this);
     }
 }

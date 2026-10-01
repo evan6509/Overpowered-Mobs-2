@@ -2,7 +2,7 @@
 
 A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies with boosted stats, OP enchanted gear, charged creepers, cavalry mounts, boss bars, and more — all using only vanilla items for full client compatibility.
 
-**Current version: 0.3.2**
+Fabric is the only supported platform. The experimental Paper port is discontinued and will receive no updates or testing.
 
 ## Features
 
@@ -160,6 +160,14 @@ All `/opm` commands require **operator** permission.
 `<attr>` may be `health`, `damage`, `speed`, `armor`, `followRange`, `xp`, or `spawnchance`.
 
 Drops remain dynamic: monster drops are multiplied by 1.2× without armor and 3× with armor.
+
+## Downloads
+
+Download the installable Fabric JAR from [GitHub Releases](https://github.com/evan6509/Overpowered-Mobs-2/releases/latest).
+
+Changes are developed on `codex/development` and reviewed in a PR into `main`. Every successful push to `main` automatically publishes a new patch version and its JAR. Development pushes, PRs, and manual workflow runs only build and verify the mod.
+
+Release numbering follows GitHub release history; `mod_version` in `gradle.properties` sets the local version and can request a higher release version. For custom release notes, add `.github/release-notes/v<version>.md`; otherwise, notes list the commits since the previous version.
 
 ## Build
 

@@ -1,14 +1,15 @@
 # Overpowered Mobs — Fabric Mod
 
 ## Identity
-- Mod ID `overpoweredmobs` · package `com.overpoweredmobs` · version `0.3.1` (`mod_version` in `gradle.properties`)
+- Fabric is the only supported platform. The experimental Paper port is discontinued and its branch has been removed; do not develop, build, test, or maintain it.
+- Mod ID `overpoweredmobs` · package `com.overpoweredmobs` · local version `0.3.2` (`mod_version` in `gradle.properties`)
 - Java 25 · Fabric Loader 0.19.3+ · Fabric API 0.154.2+ · Minecraft 26.2
 - Loom 1.17.14 — **no remapping** (unobfuscated MC). Use `implementation`/`compileOnly`, NEVER `modImplementation`.
 - Client entrypoint: `OverpoweredMobsClient` (no-op, just logs).
 
 ### Commands
 - `./gradlew build` — output: `build/libs/overpoweredmobs-<version>+mc26.2-b<build_number>.jar`
-- JAR auto-copies to `/Users/evanchubbuck/Movies/fabric test server/26.2/mods/` via `jar.doLast`
+- Local deployment is explicit: `./gradlew deployToTestServer -PtestServerModsDir=<path>`
 - Git commit count embedded in build number; commit before building
 - **Zero tests** — no test task, no test dependencies
 
@@ -63,3 +64,17 @@ Mixin compatibility level declared as `JAVA_21` in `overpoweredmobs.mixins.json`
 
 ## Committing
 - `AGENTS.md` is gitignored — do not reference in commit messages.
+
+## Git Workflow
+- Default working branch: `codex/development`. Make routine changes and commits on this branch.
+- Keep `main` as the reviewed integration branch. Do not commit or push directly to `main`.
+- Push development commits when requested. When ready for review, open a PR with base `main` and head `codex/development`.
+- Review the PR diff and resolve findings before merging. Merge only when the user explicitly requests it.
+- Keep the development branch after merging. Prefer a merge commit for this long-lived branch; synchronize it with `origin/main` before starting the next batch of work.
+- Inspect the current branch, working tree, and divergence before switching or syncing. Preserve local changes and commits; do not reset, force-push, or discard work without explicit authorization.
+
+## Releases
+- `.github/workflows/release.yml` builds development pushes and PRs; only successful pushes to `main` publish a GitHub release. Manual runs build only.
+- CI selects the next patch version from GitHub release history and passes `OPM_VERSION` to Gradle for both the JAR name and `fabric.mod.json`. `mod_version` remains the local default and can request a higher release version.
+- Publication verifies the built Fabric JAR, targets the exact commit, and verifies the uploaded JAR before publishing. Re-running an already published commit keeps its original release.
+- Optional authored notes: `.github/release-notes/v<version>.md`. Otherwise, notes include a readable heading and commit bullets.

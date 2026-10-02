@@ -3,12 +3,16 @@ package com.overpoweredmobs;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 
 public final class CavalryHelper {
     private CavalryHelper() {}
 
     public static boolean attachRider(Mob rider, Mob mount) {
         if (!rider.startRiding(mount)) return false;
+
+        // Untamed horses can run their bucking goal and eject even mob passengers.
+        if (mount instanceof AbstractHorse horse) horse.setTamed(true);
 
         syncMount(mount);
         syncRider(rider, mount);

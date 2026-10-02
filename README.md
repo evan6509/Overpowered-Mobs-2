@@ -38,6 +38,7 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 - **Mob Name Tags** — Boosted mobs display a red `⚡ Overpowered {MobName}` name tag
 - **Zombified Piglin Hivemind** — Zombified piglins periodically anger nearby piglins (10% chance per second)
 - **Angry Wolves** — Wild wolves remain angry at nearby survival/adventure players, including wolves from newly generated chunks
+- **Angry Endermen** — All Endermen automatically attack nearby visible survival/adventure players within their follow range, without requiring eye contact or provocation (even with a carved pumpkin). Applies to existing and unboosted Endermen; set `enableAngryEndermen` to `false` and use `/opm reload` to restore vanilla targeting.
 - **Water-resistant Endermen** — Endermen no longer take damage from water or rain
 - **Enderman Teleport Strike** — Endermen can blink near their combat target and strike on a cooldown
 - **Creeper Chain Detonation** — Charged creeper explosions prime nearby charged creepers in sequence
@@ -88,6 +89,7 @@ Per-mob entries inherit the stat multipliers in `defaults` unless they specify a
   "enablePiglinHive": true,
   "enableStrongholdMobs": true,
   "enableAngryWolves": true,
+  "enableAngryEndermen": true,
   "enableWaterEndermen": true,
   "chargedCreeperChance": 1.0,
   "spawnChance": 0.05,

@@ -155,10 +155,13 @@ All `/opm` commands require **operator** permission.
 | `/opm reload`                          | Reload config from disk          |
 | `/opm reset`                           | Reset config to defaults         |
 | `/opm test`                            | Toggle test mode (100% odds)     |
+| `/opm testsword`                       | Give yourself a powerful sword for testing mob kills |
 | `/opm bloodmoon`                       | Trigger a blood moon during the night in a sky-lit dimension |
 | `/opm cavalry <rider> <mount>`         | Spawn a rider on a mount for testing |
 
 `<attr>` may be `health`, `damage`, `speed`, `armor`, `followRange`, `xp`, or `spawnchance`.
+
+Run `/opm testsword` as a player to receive an unbreakable netherite **OPM Test Sword**, with +2,040 bonus attack damage and a fast attack cooldown. It has no Looting enchantment, so it preserves normal kill-drop behavior. If your inventory is full, the sword drops at your feet for you to pick up.
 
 Drops remain dynamic: monster loot-table drops are multiplied by 1.2× without armor and 3× with armor. Equipped gear is excluded, and boosted mobs' armor and weapons never drop, including from elites.
 

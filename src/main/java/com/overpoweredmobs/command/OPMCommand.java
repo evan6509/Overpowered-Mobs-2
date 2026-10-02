@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.overpoweredmobs.OverpoweredMobs;
 import com.overpoweredmobs.OverpoweredMobsLogger;
 import com.overpoweredmobs.BloodMoonManager;
@@ -13,16 +14,26 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Unit;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
@@ -50,6 +61,8 @@ public class OPMCommand {
                 .executes(OPMCommand::executeReset))
             .then(Commands.literal("test")
                 .executes(OPMCommand::executeTest))
+            .then(Commands.literal("testsword")
+                .executes(OPMCommand::executeTestSword))
             .then(Commands.literal("bloodmoon")
                 .executes(OPMCommand::executeBloodMoon))
             .then(Commands.literal("cavalry")
@@ -149,6 +162,40 @@ public class OPMCommand {
         ctx.getSource().sendSuccess(() ->
             Component.literal("Test mode " + (now ? "enabled" : "disabled") + " — configured random chances forced to 100%"), true);
         OverpoweredMobsLogger.info("Test mode " + (now ? "enabled" : "disabled"));
+        return 1;
+    }
+
+    private static int executeTestSword(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        ItemStack sword = new ItemStack(Items.NETHERITE_SWORD);
+        sword.set(DataComponents.CUSTOM_NAME, Component.literal("OPM Test Sword"));
+        sword.set(DataComponents.UNBREAKABLE, Unit.INSTANCE);
+
+        // Preserve the sword's vanilla modifiers and keep ordinary player-kill loot behavior.
+        ItemAttributeModifiers modifiers = sword.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY)
+            .withModifierAdded(Attributes.ATTACK_DAMAGE, new AttributeModifier(
+                Identifier.fromNamespaceAndPath(OverpoweredMobs.MOD_ID, "test_sword_damage"),
+                2040.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
+            .withModifierAdded(Attributes.ATTACK_SPEED, new AttributeModifier(
+                Identifier.fromNamespaceAndPath(OverpoweredMobs.MOD_ID, "test_sword_speed"),
+                20.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+        sword.set(DataComponents.ATTRIBUTE_MODIFIERS, modifiers);
+
+        // Creative inventory insertion can silently discard items when full.
+        if (player.getInventory().getFreeSlot() >= 0 && player.getInventory().add(sword)) {
+            player.containerMenu.broadcastChanges();
+            ctx.getSource().sendSuccess(() -> Component.literal("Gave you an OPM Test Sword"), false);
+            return 1;
+        }
+
+        ItemEntity droppedSword = player.drop(sword, false);
+        if (droppedSword == null) {
+            ctx.getSource().sendFailure(Component.literal("Could not give you an OPM Test Sword"));
+            return 0;
+        }
+        droppedSword.setNoPickUpDelay();
+        droppedSword.setTarget(player.getUUID());
+        ctx.getSource().sendSuccess(() -> Component.literal("Inventory full — dropped your OPM Test Sword at your feet"), false);
         return 1;
     }
 

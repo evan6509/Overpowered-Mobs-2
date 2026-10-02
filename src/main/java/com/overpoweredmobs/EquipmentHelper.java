@@ -138,8 +138,15 @@ public final class EquipmentHelper {
 
     private static void setSlot(Mob mob, EquipmentSlot slot, ItemStack stack) {
         mob.setItemSlot(slot, stack);
-        // Values greater than one preserve equipment through every death, including durability.
-        mob.setDropChance(slot, OverpoweredMobs.isElite(mob) ? 2.0f : 0.0f);
+        mob.setDropChance(slot, 0.0f);
+    }
+
+    public static void suppressEquipmentDrops(Mob mob) {
+        if (!mob.entityTags().contains(OverpoweredMobs.BOOSTED_TAG)) return;
+
+        // Saved elite mobs can still carry the old guaranteed equipment drop chances.
+        // Vanilla skips zero-chance slots before applying any Looting bonus.
+        for (EquipmentSlot slot : EquipmentSlot.values()) mob.setDropChance(slot, 0.0f);
     }
 
     @SuppressWarnings("unchecked")

@@ -7,6 +7,7 @@ import com.overpoweredmobs.MobSpawnHelper;
 import com.overpoweredmobs.OverpoweredMobs;
 import com.overpoweredmobs.OverpoweredMobsLogger;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -27,6 +28,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MobAttributesMixin {
     @Unique
     private boolean opmDistanceGoalInstalled;
+
+    @Inject(method = "dropCustomDeathLoot", at = @At("HEAD"))
+    private void preventBoostedEquipmentDrops(ServerLevel level, DamageSource source,
+        boolean killedByPlayer, CallbackInfo ci) {
+        EquipmentHelper.suppressEquipmentDrops((Mob) (Object) this);
+    }
 
     @Inject(method = "getControllingPassenger", at = @At("HEAD"), cancellable = true)
     private void ignoreCavalryMobPassenger(CallbackInfoReturnable<LivingEntity> cir) {

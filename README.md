@@ -13,7 +13,7 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 - **Dimension Multipliers** — Per-dimension stat scaling (e.g., nerf overworld, buff nether)
 
 ### Gear & Combat
-- **OP Enchanted Gear** — Equippable mobs get full netherite armor (Protection X) + OP weapons — regular gear never drops; elite gear is preserved on death. Pillagers retain crossbows and illusioners retain bows
+- **OP Enchanted Gear** — Equippable mobs get full netherite armor (Protection X) + OP weapons — equipped gear never drops, including from elites. Pillagers retain crossbows and illusioners retain bows
 - **Custom Weapon Config** — Per-mob weapon + enchantment overrides (Drowned defaults to Trident + Impaling X)
 - **Piglin Gold Armor** — Piglins get gold armor instead of netherite; brutes have 50% gear chance
 - **Ranged Attack Speed** — Boosted skeletons, strays, bogged, and parched shoot faster
@@ -47,7 +47,7 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 ### Events
 - **Stronghold Mob Wave** — Entering a stronghold (follow_ender_eye advancement) spawns a wave of boosted mobs
 - **Blood Moon / Horde Night** — Scheduled or manually triggered nights telegraph with sky flashes, particles, and sound while increasing horde-mode rolls
-- **Elite Mobs** — A rare tier layered on boosted mobs has extra stats, a purple elite name, soul-fire particles, and guaranteed equipped-gear drops
+- **Elite Mobs** — A rare tier layered on boosted mobs has extra stats, a purple elite name, and soul-fire particles
 
 ### Commands
 - **Test Mode** — Forces configured random mechanics to 100% for testing, including mob boosting, charged creepers, cavalry, piñatas, piglin brute gear, and piglin hive alerts
@@ -160,7 +160,7 @@ All `/opm` commands require **operator** permission.
 
 `<attr>` may be `health`, `damage`, `speed`, `armor`, `followRange`, `xp`, or `spawnchance`.
 
-Drops remain dynamic: monster drops are multiplied by 1.2× without armor and 3× with armor.
+Drops remain dynamic: monster loot-table drops are multiplied by 1.2× without armor and 3× with armor. Equipped gear is excluded, and boosted mobs' armor and weapons never drop, including from elites.
 
 ## Downloads
 

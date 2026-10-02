@@ -28,8 +28,8 @@ public final class MobSpawnHelper {
         OverpoweredConfig config = OverpoweredMobs.getConfig();
         boolean stronghold = mob.entityTags().contains(OverpoweredMobs.STRONGHOLD_BOOST_TAG);
         mob.removeTag(OverpoweredMobs.STRONGHOLD_BOOST_TAG);
-        if (!stronghold && (BloodMoonManager.shouldForceHorde(mob)
-            || (!config.isTestMode() && mob.getRandom().nextDouble() >= config.getSpawnChanceFor(mob.getType())))) {
+        if (!stronghold && !config.isTestMode()
+            && mob.getRandom().nextDouble() >= config.getSpawnChanceFor(mob.getType())) {
             applyHorde(mob);
             return;
         }

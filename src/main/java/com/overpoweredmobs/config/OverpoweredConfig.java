@@ -81,10 +81,6 @@ public class OverpoweredConfig {
     private double shieldChance = 0.25;
     private boolean enableTotemSecondLife = true;
     private double totemChance = 0.03;
-    private boolean enableBloodMoon = true;
-    private int bloodMoonIntervalNights = 7;
-    private int bloodMoonDurationTicks = 12000;
-    private double bloodMoonHordeChance = 0.90;
     private boolean enableEliteMobs = true;
     private double eliteChance = 0.05;
     private double eliteHealthMultiplier = 3.0;
@@ -204,10 +200,6 @@ public class OverpoweredConfig {
     public double getShieldChance() { return shieldChance; }
     public boolean isEnableTotemSecondLife() { return enableTotemSecondLife; }
     public double getTotemChance() { return totemChance; }
-    public boolean isEnableBloodMoon() { return enableBloodMoon; }
-    public int getBloodMoonIntervalNights() { return bloodMoonIntervalNights; }
-    public int getBloodMoonDurationTicks() { return bloodMoonDurationTicks; }
-    public double getBloodMoonHordeChance() { return bloodMoonHordeChance; }
     public boolean isEnableEliteMobs() { return enableEliteMobs; }
     public double getEliteChance() { return eliteChance; }
     public double getEliteHealthMultiplier() { return eliteHealthMultiplier; }
@@ -355,9 +347,6 @@ public class OverpoweredConfig {
         wardenSensorRange = clampRange(wardenSensorRange, 32.0);
         shieldChance = clampChance(shieldChance);
         totemChance = clampChance(totemChance);
-        bloodMoonIntervalNights = clampNights(bloodMoonIntervalNights);
-        bloodMoonDurationTicks = clampTicks(bloodMoonDurationTicks, 12000, 24000);
-        bloodMoonHordeChance = clampChance(bloodMoonHordeChance);
         eliteChance = clampChance(eliteChance);
         eliteHealthMultiplier = clampMultiplier(eliteHealthMultiplier);
         eliteDamageMultiplier = clampMultiplier(eliteDamageMultiplier);
@@ -404,10 +393,6 @@ public class OverpoweredConfig {
     private static int clampTicks(int value, int fallback, int max) {
         if (value < 1) return fallback;
         return Math.min(max, value);
-    }
-
-    private static int clampNights(int value) {
-        return Math.max(1, Math.min(1000, value));
     }
 
     public static class MobConfig {

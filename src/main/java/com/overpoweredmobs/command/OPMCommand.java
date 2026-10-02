@@ -7,7 +7,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.overpoweredmobs.OverpoweredMobs;
 import com.overpoweredmobs.OverpoweredMobsLogger;
-import com.overpoweredmobs.BloodMoonManager;
 import com.overpoweredmobs.CavalryHelper;
 import com.overpoweredmobs.config.OverpoweredConfig;
 import net.minecraft.commands.CommandSourceStack;
@@ -63,8 +62,6 @@ public class OPMCommand {
                 .executes(OPMCommand::executeTest))
             .then(Commands.literal("testsword")
                 .executes(OPMCommand::executeTestSword))
-            .then(Commands.literal("bloodmoon")
-                .executes(OPMCommand::executeBloodMoon))
             .then(Commands.literal("cavalry")
                 .then(Commands.argument("rider", StringArgumentType.word())
                     .then(Commands.argument("mount", StringArgumentType.word())
@@ -270,21 +267,6 @@ public class OPMCommand {
             ? new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(level.getRandom()), false)
             : null;
         mob.finalizeSpawn(level, difficulty, EntitySpawnReason.COMMAND, spawnData);
-    }
-
-    private static int executeBloodMoon(CommandContext<CommandSourceStack> ctx) {
-        if (!(ctx.getSource().getLevel() instanceof ServerLevel level)) return 0;
-        if (!OverpoweredMobs.getConfig().isEnableBloodMoon()) {
-            ctx.getSource().sendFailure(Component.literal("Blood moon is disabled in the config"));
-            return 0;
-        }
-
-        if (!BloodMoonManager.trigger(level)) {
-            ctx.getSource().sendFailure(Component.literal("Blood moon can only start at night in a sky-lit dimension"));
-            return 0;
-        }
-        ctx.getSource().sendSuccess(() -> Component.literal("Blood moon triggered"), true);
-        return 1;
     }
 
     private static EntityType<?> findEntityType(String str) {

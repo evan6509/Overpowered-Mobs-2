@@ -212,7 +212,6 @@ public class OverpoweredMobs implements ModInitializer {
         });
 
         ServerTickEvents.START_LEVEL_TICK.register(BossBarManager::onWorldTick);
-        ServerTickEvents.START_LEVEL_TICK.register(BloodMoonManager::onWorldTick);
 
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) ->
             BossBarManager.onPlayerDisconnect(oldPlayer)

@@ -46,7 +46,6 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 
 ### Events
 - **Stronghold Mob Wave** — Entering a stronghold (follow_ender_eye advancement) spawns a wave of boosted mobs
-- **Blood Moon / Horde Night** — Scheduled or manually triggered nights telegraph with sky flashes, particles, and sound while increasing horde-mode rolls
 - **Elite Mobs** — A rare tier layered on boosted mobs has extra stats, a purple elite name, and soul-fire particles
 
 ### Commands
@@ -107,10 +106,6 @@ Per-mob entries inherit the stat multipliers in `defaults` unless they specify a
   "shieldChance": 0.25,
   "enableTotemSecondLife": true,
   "totemChance": 0.03,
-  "enableBloodMoon": true,
-  "bloodMoonIntervalNights": 7,
-  "bloodMoonDurationTicks": 12000,
-  "bloodMoonHordeChance": 0.9,
   "enableEliteMobs": true,
   "eliteChance": 0.05,
   "eliteHealthMultiplier": 3.0,
@@ -156,7 +151,6 @@ All `/opm` commands require **operator** permission.
 | `/opm reset`                           | Reset config to defaults         |
 | `/opm test`                            | Toggle test mode (100% odds)     |
 | `/opm testsword`                       | Give yourself a powerful sword for testing mob kills |
-| `/opm bloodmoon`                       | Trigger a blood moon during the night in a sky-lit dimension |
 | `/opm cavalry <rider> <mount>`         | Spawn a rider on a mount for testing |
 
 `<attr>` may be `health`, `damage`, `speed`, `armor`, `followRange`, `xp`, or `spawnchance`.

@@ -57,6 +57,7 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 `config/overpoweredmobs.json` is auto-generated on first launch.
 Invalid config files are preserved. Failed reloads retain the current settings and report an error; an invalid file at startup uses defaults in memory until the file is corrected. Saves use atomic replacement where supported.
 Per-mob entries inherit the stat multipliers in `defaults` unless they specify an override.
+Explicit per-mob multipliers in older configs are preserved, even when they match shipped defaults. Remove a per-mob field to make it inherit the global value.
 
 ### Default multipliers
 

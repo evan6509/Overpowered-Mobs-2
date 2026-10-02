@@ -28,7 +28,7 @@ public class OverpoweredConfig {
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("overpoweredmobs.json");
     private static final int CONFIG_FORMAT_VERSION = 2;
 
-    // Absent in older files. Keep this nullable so they can be migrated once.
+    // Older files can omit this; normalization supplies the current version.
     private Integer configFormatVersion;
 
     private boolean enableGear = true;
@@ -253,9 +253,8 @@ public class OverpoweredConfig {
                 Type type = new TypeToken<OverpoweredConfig>(){}.getType();
                 OverpoweredConfig config = GSON.fromJson(reader, type);
                 if (config != null) {
-                    if (config.configFormatVersion == null) {
-                        config.migrateLegacyMobOverrides();
-                    }
+                    // Explicit per-mob values remain overrides, including values equal
+                    // to shipped defaults. Only omitted fields inherit global settings.
                     config.normalize();
                     return config;
                 }
@@ -359,15 +358,6 @@ public class OverpoweredConfig {
         zombiePinataCount = clampCount(zombiePinataCount);
     }
 
-    private void migrateLegacyMobOverrides() {
-        if (mobs == null) return;
-        // Old saves wrote every multiplier into each entry, including untouched defaults.
-        // Values identical to the shipped defaults could also have been set intentionally.
-        for (MobConfig current : mobs.values()) {
-            if (current != null) current.clearLegacyDefaultMultipliers();
-        }
-    }
-
     private static double clampChance(double value) {
         if (!Double.isFinite(value)) return 0.0;
         return Math.max(0.0, Math.min(1.0, value));
@@ -445,15 +435,6 @@ public class OverpoweredConfig {
             if (override.spawnChance != null) spawnChance = override.spawnChance;
             if (override.weapon != null) weapon = override.weapon;
             if (override.weaponEnchantments != null) weaponEnchantments = new HashMap<>(override.weaponEnchantments);
-        }
-
-        private void clearLegacyDefaultMultipliers() {
-            if (Double.valueOf(2.0).equals(healthMultiplier)) healthMultiplier = null;
-            if (Double.valueOf(2.0).equals(damageMultiplier)) damageMultiplier = null;
-            if (Double.valueOf(1.0).equals(speedMultiplier)) speedMultiplier = null;
-            if (Double.valueOf(2.0).equals(armorMultiplier)) armorMultiplier = null;
-            if (Double.valueOf(2.0).equals(followRangeMultiplier)) followRangeMultiplier = null;
-            if (Double.valueOf(3.0).equals(xpMultiplier)) xpMultiplier = null;
         }
 
         public MobConfig copy() {

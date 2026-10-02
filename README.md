@@ -2,7 +2,7 @@
 
 A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies with boosted stats, OP enchanted gear, charged creepers, cavalry mounts, boss bars, and more — all using only vanilla items for full client compatibility.
 
-**Current version: 0.3.2**
+Fabric is the only supported platform. The experimental Paper port is discontinued and will receive no updates or testing.
 
 ## Features
 
@@ -13,10 +13,10 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 - **Dimension Multipliers** — Per-dimension stat scaling (e.g., nerf overworld, buff nether)
 
 ### Gear & Combat
-- **OP Enchanted Gear** — Equippable mobs get full netherite armor (Protection X) + OP weapons — gear never drops
+- **OP Enchanted Gear** — Equippable mobs get full netherite armor (Protection X) + OP weapons — equipped gear never drops, including from elites. Pillagers retain crossbows and illusioners retain bows
 - **Custom Weapon Config** — Per-mob weapon + enchantment overrides (Drowned defaults to Trident + Impaling X)
 - **Piglin Gold Armor** — Piglins get gold armor instead of netherite; brutes have 50% gear chance
-- **Ranged Attack Speed** — Skeletons, strays, bogged, and parched shoot faster
+- **Ranged Attack Speed** — Boosted skeletons, strays, bogged, and parched shoot faster
 - **Shield Gear** — Equippable hostile mobs can roll a vanilla shield in the off hand
 - **Second Life** — A rare totem roll lets a hostile mob survive one lethal hit
 
@@ -32,12 +32,13 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 - **Parched** — Desert skeleton variant gets a bow like other skeletons
 
 ### Aggression & Awareness
-- **Distance Speed System** — Boosted mobs move faster the farther they are from the player (5.6 m/s close, 8.4 m/s far, configurable)
+- **Distance Speed System** — Boosted mobs use configurable close/far speed targets (5.6/8.4 nominal m/s), with stat multipliers and potion effects applied on top; actual movement also depends on navigation and physics
 - **Alert Sound** — Wither spawn sound plays when a boosted equippable mob spawns near a player
 - **Boss Bar** — Per-player boss bar tracking the nearest boosted mob's HP (color-coded)
 - **Mob Name Tags** — Boosted mobs display a red `⚡ Overpowered {MobName}` name tag
 - **Zombified Piglin Hivemind** — Zombified piglins periodically anger nearby piglins (10% chance per second)
-- **Angry Wolves** — All wolves spawn permanently angry at the nearest player
+- **Angry Wolves** — Wild wolves remain angry at nearby survival/adventure players, including wolves from newly generated chunks
+- **Angry Endermen** — All Endermen automatically attack nearby visible survival/adventure players within their follow range, without requiring eye contact or provocation (even with a carved pumpkin). Applies to existing and unboosted Endermen; set `enableAngryEndermen` to `false` and use `/opm reload` to restore vanilla targeting.
 - **Water-resistant Endermen** — Endermen no longer take damage from water or rain
 - **Enderman Teleport Strike** — Endermen can blink near their combat target and strike on a cooldown
 - **Creeper Chain Detonation** — Charged creeper explosions prime nearby charged creepers in sequence
@@ -46,8 +47,7 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 
 ### Events
 - **Stronghold Mob Wave** — Entering a stronghold (follow_ender_eye advancement) spawns a wave of boosted mobs
-- **Blood Moon / Horde Night** — Scheduled or manually triggered nights telegraph with sky flashes, particles, and sound while increasing horde-mode rolls
-- **Elite Mobs** — A rare tier layered on boosted mobs has extra stats, a purple elite name, soul-fire particles, and guaranteed equipped-gear drops
+- **Elite Mobs** — A rare tier layered on boosted mobs has extra stats, a purple elite name, and soul-fire particles
 
 ### Commands
 - **Test Mode** — Forces configured random mechanics to 100% for testing, including mob boosting, charged creepers, cavalry, piñatas, piglin brute gear, and piglin hive alerts
@@ -55,6 +55,9 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 ## Config
 
 `config/overpoweredmobs.json` is auto-generated on first launch.
+Invalid config files are preserved. Failed reloads retain the current settings and report an error; an invalid file at startup uses defaults in memory until the file is corrected. Saves use atomic replacement where supported.
+Per-mob entries inherit the stat multipliers in `defaults` unless they specify an override.
+Explicit per-mob multipliers in older configs are preserved, even when they match shipped defaults. Remove a per-mob field to make it inherit the global value.
 
 ### Default multipliers
 
@@ -71,6 +74,7 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 
 ```json
 {
+  "configFormatVersion": 2,
   "enableGear": true,
   "enableCavalry": true,
   "enablePinata": true,
@@ -86,6 +90,7 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
   "enablePiglinHive": true,
   "enableStrongholdMobs": true,
   "enableAngryWolves": true,
+  "enableAngryEndermen": true,
   "enableWaterEndermen": true,
   "chargedCreeperChance": 1.0,
   "spawnChance": 0.05,
@@ -104,10 +109,6 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
   "shieldChance": 0.25,
   "enableTotemSecondLife": true,
   "totemChance": 0.03,
-  "enableBloodMoon": true,
-  "bloodMoonIntervalNights": 7,
-  "bloodMoonDurationTicks": 12000,
-  "bloodMoonHordeChance": 0.9,
   "enableEliteMobs": true,
   "eliteChance": 0.05,
   "eliteHealthMultiplier": 3.0,
@@ -152,12 +153,22 @@ All `/opm` commands require **operator** permission.
 | `/opm reload`                          | Reload config from disk          |
 | `/opm reset`                           | Reset config to defaults         |
 | `/opm test`                            | Toggle test mode (100% odds)     |
-| `/opm bloodmoon`                       | Trigger a blood moon immediately  |
+| `/opm testsword`                       | Give yourself a powerful sword for testing mob kills |
 | `/opm cavalry <rider> <mount>`         | Spawn a rider on a mount for testing |
 
 `<attr>` may be `health`, `damage`, `speed`, `armor`, `followRange`, `xp`, or `spawnchance`.
 
-Drops remain dynamic: monster drops are multiplied by 1.2× without armor and 3× with armor.
+Run `/opm testsword` as a player to receive an unbreakable netherite **OPM Test Sword**, with +2,040 bonus attack damage and a fast attack cooldown. It has no Looting enchantment, so it preserves normal kill-drop behavior. If your inventory is full, the sword drops at your feet for you to pick up.
+
+Drops remain dynamic: monster loot-table drops are multiplied by 1.2× without armor and 3× with armor. Equipped gear is excluded, and boosted mobs' armor and weapons never drop, including from elites.
+
+## Downloads
+
+Download the installable Fabric JAR from [GitHub Releases](https://github.com/evan6509/Overpowered-Mobs-2/releases/latest).
+
+Changes are developed on `codex/development` and reviewed in a PR into `main`. Every successful push to `main` automatically publishes a new patch version and its JAR. Development pushes, PRs, and manual workflow runs only build and verify the mod.
+
+Release numbering follows GitHub release history; `mod_version` in `gradle.properties` sets the local version and can request a higher release version. For custom release notes, add `.github/release-notes/v<version>.md`; otherwise, notes list the commits since the previous version.
 
 ## Build
 

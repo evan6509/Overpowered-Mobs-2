@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Wolf.class)
 public class WolfMixin {
@@ -30,13 +31,29 @@ public class WolfMixin {
         Wolf wolf = (Wolf) (Object) this;
         OverpoweredConfig config = OverpoweredMobs.getConfig();
         if (!config.isEnableAngryWolves()) return;
-        if (!(level instanceof ServerLevel serverLevel)) return;
-
         wolf.getEntityData().set(DATA_ANGER_END_TIME, Long.MAX_VALUE);
+    }
 
-        Player nearest = serverLevel.getNearestPlayer(wolf, 64.0);
-        if (nearest != null) {
-            wolf.setPersistentAngerTarget(EntityReference.of(nearest));
+    @Inject(method = "aiStep", at = @At("TAIL"))
+    private void maintainAnger(CallbackInfo ci) {
+        Wolf wolf = (Wolf) (Object) this;
+        if (!(wolf.level() instanceof ServerLevel level) || !wolf.isAlive() || wolf.isTame()
+            || !OverpoweredMobs.getConfig().isEnableAngryWolves()) return;
+        // Vanilla refreshes finite anger timers and clears invalid targets during aiStep.
+        wolf.getEntityData().set(DATA_ANGER_END_TIME, Long.MAX_VALUE);
+        if (wolf.getTarget() instanceof Player player && player.isAlive()
+            && !player.isCreative() && !player.isSpectator()) return;
+        Player nearest = null;
+        double nearestDistance = 64.0 * 64.0;
+        for (Player player : level.players()) {
+            if (!player.isAlive() || player.isCreative() || player.isSpectator()) continue;
+            double distance = wolf.distanceToSqr(player);
+            if (distance < nearestDistance) {
+                nearest = player;
+                nearestDistance = distance;
+            }
         }
+        wolf.setPersistentAngerTarget(nearest == null ? null : EntityReference.of(nearest));
+        if (wolf.getTarget() instanceof Player) wolf.setTarget(null);
     }
 }

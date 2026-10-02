@@ -9,10 +9,14 @@ def getGitCommitCount() {
     return process.text.trim()
 }
 
-version = project.mod_version + "+mc" + project.minecraft_version + "-b" + getGitCommitCount()
+def releaseModVersion = providers.environmentVariable("OPM_VERSION").getOrElse(project.mod_version)
+if (!(releaseModVersion ==~ /(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)/)) {
+    throw new GradleException("Mod version must be a number such as 0.3.3")
+}
+version = releaseModVersion + "+mc" + project.minecraft_version + "-b" + getGitCommitCount()
 group = project.maven_group
 
-def resourceModVersion = project.mod_version
+def resourceModVersion = releaseModVersion
 def minecraftDependency = project.minecraft_dependency
 def archiveBaseName = project.archives_base_name
 def testServerModsDir = providers.gradleProperty("testServerModsDir")

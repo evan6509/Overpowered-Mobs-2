@@ -103,12 +103,16 @@ public class OverpoweredConfig {
         map.put("minecraft:drowned", drowned);
 
         MobConfig pillager = new MobConfig();
-        pillager.spawnChance = 0.15;
+        pillager.spawnChance = 0.4;
         map.put("minecraft:pillager", pillager);
 
         MobConfig creeper = new MobConfig();
-        creeper.spawnChance = 0.2;
+        creeper.spawnChance = 0.5;
         map.put("minecraft:creeper", creeper);
+
+        MobConfig enderDragon = new MobConfig();
+        enderDragon.spawnChance = 1.0;
+        map.put("minecraft:ender_dragon", enderDragon);
 
         return map;
     }

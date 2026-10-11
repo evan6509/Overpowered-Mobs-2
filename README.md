@@ -7,7 +7,7 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 ## Features
 
 ### Core
-- **Mob Boosting** — Most hostile mobs have a 20% chance to receive multiplied health, damage, speed, armor, and follow range (pillagers default to 15%, creepers to 20%)
+- **Mob Boosting** — Most hostile mobs have a 20% chance to receive multiplied health, damage, speed, armor, and follow range (creepers default to 50%, pillagers to 40%, and the Ender Dragon to 100%)
 - **Horde Mode** — Mobs that fail the spawn roll get 3× follow range (configurable speed bonus)
 - **Dynamic Drop Multiplier** — 1.2× drops without armor, 3× with armor
 - **Dimension Multipliers** — Per-dimension stat scaling (e.g., nerf overworld, buff nether)
@@ -59,6 +59,7 @@ Invalid config files are preserved. Failed reloads retain the current settings a
 Per-mob entries inherit the stat multipliers in `defaults` unless they specify an override.
 Explicit per-mob multipliers in older configs are preserved, even when they match shipped defaults. Remove a per-mob field to make it inherit the global value.
 The global `spawnChance` defaults to `0.2` (20%). Existing configs keep their saved value; set the top-level `spawnChance` to `0.2` and run `/opm reload` to apply the new rate. Per-mob `spawnChance` overrides still take precedence.
+Default per-mob boost chances are 50% for creepers, 40% for pillagers, and 100% for the Ender Dragon. To update an existing config, use `/opm set creeper spawnchance 0.5`, `/opm set pillager spawnchance 0.4`, and `/opm set ender_dragon spawnchance 1.0`.
 
 ### Default multipliers
 
@@ -119,8 +120,9 @@ The global `spawnChance` defaults to `0.2` (20%). Existing configs keep their sa
   "eliteFollowRangeMultiplier": 1.5,
   "defaults": { ... },
   "mobs": {
-    "minecraft:pillager": { "spawnChance": 0.15 },
-    "minecraft:creeper": { "spawnChance": 0.2 },
+    "minecraft:pillager": { "spawnChance": 0.4 },
+    "minecraft:creeper": { "spawnChance": 0.5 },
+    "minecraft:ender_dragon": { "spawnChance": 1.0 },
     "minecraft:drowned": {
       "weapon": "minecraft:trident",
       "weaponEnchantments": { "minecraft:impaling": 10 }

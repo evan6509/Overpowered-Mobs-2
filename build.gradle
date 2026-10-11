@@ -72,7 +72,13 @@ tasks.register("deployToTestServer") {
         File modsDir = new File(configuredDir)
         java.nio.file.Files.createDirectories(modsDir.toPath())
         modsDir.listFiles()
-            ?.findAll { it.name.startsWith("overpoweredmobs-") && it.name != jarFile.name }
+            ?.findAll {
+                java.nio.file.Files.isRegularFile(it.toPath(), java.nio.file.LinkOption.NOFOLLOW_LINKS)
+                    && it.name.startsWith("overpoweredmobs-")
+                    && it.name.endsWith(".jar")
+                    && !it.name.endsWith("-sources.jar")
+                    && it.name != jarFile.name
+            }
             ?.each { java.nio.file.Files.deleteIfExists(it.toPath()) }
         java.nio.file.Files.copy(
             jarFile.toPath(),

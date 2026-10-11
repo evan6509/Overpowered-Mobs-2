@@ -172,5 +172,8 @@ jobs:
           verification_dir=$(mktemp -d)
           gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$(basename "$jar")" --dir "$verification_dir"
           cmp "$jar" "$verification_dir/$(basename "$jar")"
-          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+          # Refresh after upload: retrying an older draft must not replace a newer Latest release.
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --paginate --slurp > "$RUNNER_TEMP/latest-releases.json"
+          latest=$(python3 scripts/release_version.py "$RUNNER_TEMP/latest-releases.json" --latest-for "$OPM_VERSION")
+          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false "--latest=$latest"
           gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json url --jq .url

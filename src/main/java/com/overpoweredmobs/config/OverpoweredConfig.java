@@ -2,6 +2,7 @@ package com.overpoweredmobs.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
@@ -16,7 +17,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -238,13 +238,14 @@ public class OverpoweredConfig {
         defaults.set(attr, value);
     }
 
-    public static void reset() {
-        try {
-            Files.deleteIfExists(CONFIG_PATH);
-        } catch (IOException e) {
-            OverpoweredMobs.LOGGER.error("Failed to delete config", e);
+    public static boolean reset() {
+        OverpoweredConfig replacement = new OverpoweredConfig();
+        replacement.normalize();
+        if (!replacement.save()) {
+            return false;
         }
-        OverpoweredMobs.loadConfig();
+        OverpoweredMobs.setConfig(replacement);
+        return true;
     }
 
     public static OverpoweredConfig load() {
@@ -265,11 +266,13 @@ public class OverpoweredConfig {
         }
         OverpoweredConfig config = new OverpoweredConfig();
         config.normalize();
-        config.save();
+        if (!config.save()) {
+            throw new IllegalStateException("Failed to create default config");
+        }
         return config;
     }
 
-    public void save() {
+    public boolean save() {
         Path temporary = null;
         try {
             Files.createDirectories(CONFIG_PATH.getParent());
@@ -277,13 +280,12 @@ public class OverpoweredConfig {
             try (var writer = Files.newBufferedWriter(temporary)) {
                 GSON.toJson(this, writer);
             }
-            try {
-                Files.move(temporary, CONFIG_PATH, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-            } catch (AtomicMoveNotSupportedException e) {
-                Files.move(temporary, CONFIG_PATH, StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (IOException e) {
+            // A non-atomic fallback can damage the old file if replacement fails.
+            Files.move(temporary, CONFIG_PATH, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            return true;
+        } catch (IOException | JsonIOException e) {
             OverpoweredMobs.LOGGER.error("Failed to save config", e);
+            return false;
         } finally {
             if (temporary != null) {
                 try {

@@ -97,8 +97,21 @@ public class OPMCommand {
         }
 
         OverpoweredConfig config = OverpoweredMobs.getConfig();
-        config.setMobAttribute(type, attr, value);
-        config.save();
+        String entityId = BuiltInRegistries.ENTITY_TYPE.getKey(type).toString();
+        OverpoweredConfig.MobConfig previous = config.getMobs().get(entityId);
+        OverpoweredConfig.MobConfig updated = previous == null
+            ? new OverpoweredConfig.MobConfig() : previous.copy();
+        updated.set(attr, value);
+        config.setFor(type, updated);
+        if (!config.save()) {
+            if (previous == null) {
+                config.getMobs().remove(entityId);
+            } else {
+                config.setFor(type, previous);
+            }
+            ctx.getSource().sendFailure(Component.literal("Could not save config; previous settings were preserved. See the server log."));
+            return 0;
+        }
 
         ctx.getSource().sendSuccess(() ->
             Component.literal("Set " + mobStr + " " + attr + " to " + value), true);
@@ -145,7 +158,10 @@ public class OPMCommand {
     }
 
     private static int executeReset(CommandContext<CommandSourceStack> ctx) {
-        OverpoweredConfig.reset();
+        if (!OverpoweredConfig.reset()) {
+            ctx.getSource().sendFailure(Component.literal("Could not reset config; previous settings and the original file were preserved. See the server log."));
+            return 0;
+        }
         ctx.getSource().sendSuccess(() ->
             Component.literal("Config reset to defaults"), true);
         return 1;
@@ -155,7 +171,11 @@ public class OPMCommand {
         OverpoweredConfig config = OverpoweredMobs.getConfig();
         boolean now = !config.isTestMode();
         config.setTestMode(now);
-        config.save();
+        if (!config.save()) {
+            config.setTestMode(!now);
+            ctx.getSource().sendFailure(Component.literal("Could not save config; test mode was unchanged. See the server log."));
+            return 0;
+        }
         ctx.getSource().sendSuccess(() ->
             Component.literal("Test mode " + (now ? "enabled" : "disabled") + " — configured random chances forced to 100%"), true);
         OverpoweredMobsLogger.info("Test mode " + (now ? "enabled" : "disabled"));

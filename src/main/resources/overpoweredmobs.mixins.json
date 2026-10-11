@@ -4,9 +4,13 @@
     "compatibilityLevel": "JAVA_21",
     "mixins": [
         "MobAttributesMixin",
+        "GhastCavalryMeleeMixin",
         "SpecialAttackDamageMixin",
+        "RavagerRoarDamageMixin",
+        "MagmaCubeDamageMixin",
         "SkeletonBowCooldownMixin",
         "ExperienceMultiplierMixin",
+        "DragonExperienceMixin",
         "DropMultiplierMixin",
         "PinataDespawnMixin",
         "LargeFireballMixin",

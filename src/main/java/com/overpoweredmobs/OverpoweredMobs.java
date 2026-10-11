@@ -48,6 +48,10 @@ public class OverpoweredMobs implements ModInitializer {
         return config;
     }
 
+    public static void setConfig(OverpoweredConfig replacement) {
+        config = replacement;
+    }
+
     public static boolean loadConfig() {
         try {
             config = OverpoweredConfig.load();

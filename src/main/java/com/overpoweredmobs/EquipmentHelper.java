@@ -49,7 +49,7 @@ public final class EquipmentHelper {
     }
 
     public static boolean isEquippable(EntityType<?> type) {
-        return !NO_EQUIP_TYPES.contains(type);
+        return !OverpoweredMobs.isExcludedMob(type) && !NO_EQUIP_TYPES.contains(type);
     }
 
     private static final Set<EntityType<?>> PIGLIN_TYPES = Set.of(
@@ -142,6 +142,7 @@ public final class EquipmentHelper {
     }
 
     public static void suppressEquipmentDrops(Mob mob) {
+        if (OverpoweredMobs.isExcludedMob(mob.getType())) return;
         if (!mob.entityTags().contains(OverpoweredMobs.BOOSTED_TAG)) return;
 
         // Saved elite mobs can still carry the old guaranteed equipment drop chances.

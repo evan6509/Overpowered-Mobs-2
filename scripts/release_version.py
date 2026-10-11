@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Select a patch version from GitHub releases; reuse it on a commit rerun."""
+"""Select release versions and protect Latest when an older draft is retried."""
 
+import argparse
 import json
 import os
 from pathlib import Path
 import re
 import subprocess
-import sys
 
 
 VERSION = re.compile(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)")
@@ -19,11 +19,24 @@ def parse_version(value):
     return tuple(map(int, match.groups()))
 
 
+def stable_releases(releases):
+    return [release for release in releases
+            if not release.get("prerelease")
+            and release["tag_name"].startswith("v")
+            and VERSION.fullmatch(release["tag_name"][1:])]
+
+
+def should_mark_latest(releases, selected_version):
+    selected = parse_version(selected_version)
+    published = [parse_version(release["tag_name"][1:])
+                 for release in stable_releases(releases)
+                 if not release.get("draft")]
+    return not published or selected >= max(published)
+
+
 def select_version(releases, commit, tag_commits, base_version):
     base = parse_version(base_version)
-    stable = [r for r in releases if not r.get("prerelease")
-              and VERSION.fullmatch(r["tag_name"].removeprefix("v"))
-              and r["tag_name"].startswith("v")]
+    stable = stable_releases(releases)
     stable.sort(key=lambda r: parse_version(r["tag_name"][1:]))
     existing = [r for r in stable if tag_commits.get(r["tag_name"]) == commit]
     if existing:
@@ -38,8 +51,16 @@ def select_version(releases, commit, tag_commits, base_version):
 
 
 def main():
-    pages = json.loads(Path(sys.argv[1]).read_text())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("releases_file", type=Path)
+    parser.add_argument("--latest-for", metavar="VERSION",
+                        help="print whether this version should be marked Latest")
+    args = parser.parse_args()
+    pages = json.loads(args.releases_file.read_text())
     releases = [release for page in pages for release in page]
+    if args.latest_for is not None:
+        print(str(should_mark_latest(releases, args.latest_for)).lower())
+        return
     properties = {}
     for line in Path("gradle.properties").read_text().splitlines():
         if "=" in line and not line.lstrip().startswith("#"):

@@ -3,16 +3,19 @@ package com.overpoweredmobs;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 
 public final class CavalryHelper {
     private CavalryHelper() {}
 
     public static boolean attachRider(Mob rider, Mob mount) {
+        if (OverpoweredMobs.isExcludedMob(rider.getType()) || OverpoweredMobs.isExcludedMob(mount.getType())) return false;
         if (!rider.startRiding(mount)) return false;
 
         // Untamed horses can run their bucking goal and eject even mob passengers.
         if (mount instanceof AbstractHorse horse) horse.setTamed(true);
+        markChickenJockey(mount);
 
         syncMount(mount);
         syncRider(rider, mount);
@@ -22,7 +25,10 @@ public final class CavalryHelper {
     }
 
     public static void tick(Mob mob) {
+        if (OverpoweredMobs.isExcludedMob(mob.getType())) return;
         if (isCavalryMount(mob)) {
+            // Repair saved mounts even after their rider has died or dismounted.
+            markChickenJockey(mob);
             syncMount(mob);
         }
 
@@ -34,9 +40,19 @@ public final class CavalryHelper {
     }
 
     public static boolean isCavalryMount(Mob mount) {
+        if (OverpoweredMobs.isExcludedMob(mount.getType())) return false;
         // Passenger links are vanilla synchronized data; scoreboard tags are server-only.
         if (!(mount.level() instanceof ServerLevel)) return mount.getFirstPassenger() instanceof Mob;
         return mount.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG);
+    }
+
+    private static void markChickenJockey(Mob mount) {
+        if (mount instanceof Chicken chicken
+            && mount.level() instanceof ServerLevel
+            && mount.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG)) {
+            // Vanilla persists this flag, disables egg laying, and permits natural despawning.
+            chicken.setChickenJockey(true);
+        }
     }
 
     private static void ensureGoal(Mob rider, Mob mount) {

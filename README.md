@@ -4,10 +4,13 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 
 Fabric is the only supported platform. The experimental Paper port is discontinued and will receive no updates or testing.
 
+Giants are excluded from this mod's enhancements and cavalry. Vanilla giants can still be summoned.
+Previously enhanced giants are cleaned up on their first active server tick after loading: OPM modifiers, tags, generated names, and gear with OPM drop chances are removed. Unrelated modifiers, custom names, and gear with ordinary drop chances are preserved.
+
 ## Features
 
 ### Core
-- **Mob Boosting** — Multiplied health, damage, speed, armor, and follow range for hostile mobs
+- **Mob Boosting** — Most hostile mobs have a 20% chance to receive multiplied health, damage, speed, armor, and follow range (creepers default to 50%, pillagers to 40%, and the Ender Dragon to 100%)
 - **Horde Mode** — Mobs that fail the spawn roll get 3× follow range (configurable speed bonus)
 - **Dynamic Drop Multiplier** — 1.2× drops without armor, 3× with armor
 - **Dimension Multipliers** — Per-dimension stat scaling (e.g., nerf overworld, buff nether)
@@ -26,7 +29,6 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 - **Skeleton Horsemen** — Skeletons, strays, bogged, and parched can spawn on skeleton horses (20%)
 - **Zombie Piñata** — Zombies explode into baby zombies on player kill (1% base, 75% when densely packed)
 - **Evil Bunnies** — All rabbits spawn as the killer variant
-- **Giant AI** — Giants now have attack, look, wander, and random look goals
 - **Silverfish Speed** — Configurable extra speed for silverfish (default 1.0×, disabled)
 - **Shulker Levitation** — Doubled levitation duration from shulker bullets
 - **Parched** — Desert skeleton variant gets a bow like other skeletons
@@ -58,6 +60,8 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 Invalid config files are preserved. Failed reloads retain the current settings and report an error; an invalid file at startup uses defaults in memory until the file is corrected. Saves use atomic replacement where supported.
 Per-mob entries inherit the stat multipliers in `defaults` unless they specify an override.
 Explicit per-mob multipliers in older configs are preserved, even when they match shipped defaults. Remove a per-mob field to make it inherit the global value.
+The global `spawnChance` defaults to `0.2` (20%). Existing configs keep their saved value; set the top-level `spawnChance` to `0.2` and run `/opm reload` to apply the new rate. Per-mob `spawnChance` overrides still take precedence.
+Default per-mob boost chances are 50% for creepers, 40% for pillagers, and 100% for the Ender Dragon. To update an existing config, use `/opm set creeper spawnchance 0.5`, `/opm set pillager spawnchance 0.4`, and `/opm set ender_dragon spawnchance 1.0`.
 
 ### Default multipliers
 
@@ -93,7 +97,7 @@ Explicit per-mob multipliers in older configs are preserved, even when they matc
   "enableAngryEndermen": true,
   "enableWaterEndermen": true,
   "chargedCreeperChance": 1.0,
-  "spawnChance": 0.05,
+  "spawnChance": 0.2,
   "enableEndermanTeleportStrike": true,
   "endermanTeleportCooldown": 100,
   "endermanTeleportMinRange": 4.0,
@@ -118,8 +122,9 @@ Explicit per-mob multipliers in older configs are preserved, even when they matc
   "eliteFollowRangeMultiplier": 1.5,
   "defaults": { ... },
   "mobs": {
-    "minecraft:pillager": { "spawnChance": 0.15 },
-    "minecraft:creeper": { "spawnChance": 0.2 },
+    "minecraft:pillager": { "spawnChance": 0.4 },
+    "minecraft:creeper": { "spawnChance": 0.5 },
+    "minecraft:ender_dragon": { "spawnChance": 1.0 },
     "minecraft:drowned": {
       "weapon": "minecraft:trident",
       "weaponEnchantments": { "minecraft:impaling": 10 }

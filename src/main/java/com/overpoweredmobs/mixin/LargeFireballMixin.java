@@ -6,6 +6,8 @@ import com.overpoweredmobs.config.OverpoweredConfig;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,5 +30,18 @@ public class LargeFireballMixin {
 
         int power = ((LargeFireballAccessor) this).getExplosionPower();
         ((LargeFireballAccessor) this).setExplosionPower((int) Math.ceil(power * mult));
+    }
+
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void saveExplosionPower(ValueOutput output, CallbackInfo ci) {
+        // Vanilla writes a signed byte even though explosionPower is an int.
+        // Preserve scaled powers above 127 instead of wrapping on a chunk reload.
+        output.putInt("ExplosionPower", ((LargeFireballAccessor) this).getExplosionPower());
+    }
+
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void loadExplosionPower(ValueInput input, CallbackInfo ci) {
+        // getIntOr also accepts legacy byte tags. Loading must not scale again.
+        ((LargeFireballAccessor) this).setExplosionPower(input.getIntOr("ExplosionPower", 1));
     }
 }

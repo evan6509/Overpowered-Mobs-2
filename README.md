@@ -5,6 +5,7 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 Fabric is the only supported platform. The experimental Paper port is discontinued and will receive no updates or testing.
 
 Giants are excluded from this mod's enhancements and cavalry. Vanilla giants can still be summoned.
+Previously enhanced giants are cleaned up on their first active server tick after loading: OPM modifiers, tags, generated names, and gear with OPM drop chances are removed. Unrelated modifiers, custom names, and gear with ordinary drop chances are preserved.
 
 ## Features
 

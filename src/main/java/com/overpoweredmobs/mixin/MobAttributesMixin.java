@@ -29,6 +29,9 @@ public class MobAttributesMixin {
     @Unique
     private boolean opmDistanceGoalInstalled;
 
+    @Unique
+    private boolean opmExcludedMobCleaned;
+
     @Inject(method = "dropCustomDeathLoot", at = @At("HEAD"))
     private void preventBoostedEquipmentDrops(ServerLevel level, DamageSource source,
         boolean killedByPlayer, CallbackInfo ci) {
@@ -52,6 +55,13 @@ public class MobAttributesMixin {
     private void tickMobSystems(CallbackInfo ci) {
         Mob mob = (Mob) (Object) this;
         if (mob.level() instanceof ServerLevel level && mob.isAlive()) {
+            if (OverpoweredMobs.isExcludedMob(mob.getType())) {
+                if (!opmExcludedMobCleaned) {
+                    MobSpawnHelper.removeExcludedEnhancements(mob);
+                    opmExcludedMobCleaned = true;
+                }
+                return;
+            }
             MobSpawnHelper.initialize(mob, level);
             if (!opmDistanceGoalInstalled && OverpoweredMobs.getConfig().isEnableDistanceSpeed()
                 && mob.entityTags().contains(OverpoweredMobs.BOOSTED_TAG)

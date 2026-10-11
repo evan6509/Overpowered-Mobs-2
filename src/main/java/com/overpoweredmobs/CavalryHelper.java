@@ -10,6 +10,7 @@ public final class CavalryHelper {
     private CavalryHelper() {}
 
     public static boolean attachRider(Mob rider, Mob mount) {
+        if (OverpoweredMobs.isExcludedMob(rider.getType()) || OverpoweredMobs.isExcludedMob(mount.getType())) return false;
         if (!rider.startRiding(mount)) return false;
 
         // Untamed horses can run their bucking goal and eject even mob passengers.
@@ -24,6 +25,7 @@ public final class CavalryHelper {
     }
 
     public static void tick(Mob mob) {
+        if (OverpoweredMobs.isExcludedMob(mob.getType())) return;
         if (isCavalryMount(mob)) {
             // Repair saved mounts even after their rider has died or dismounted.
             markChickenJockey(mob);
@@ -38,6 +40,7 @@ public final class CavalryHelper {
     }
 
     public static boolean isCavalryMount(Mob mount) {
+        if (OverpoweredMobs.isExcludedMob(mount.getType())) return false;
         // Passenger links are vanilla synchronized data; scoreboard tags are server-only.
         if (!(mount.level() instanceof ServerLevel)) return mount.getFirstPassenger() instanceof Mob;
         return mount.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG);

@@ -19,7 +19,6 @@
         "ShulkerBulletMixin",
         "RabbitMixin",
         "StrongholdMobTriggerMixin",
-        "GiantAIMixin",
         "WolfMixin",
         "EndermanMixin",
         "CreeperChainMixin",

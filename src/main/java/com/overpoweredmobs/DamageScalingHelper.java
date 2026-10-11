@@ -40,6 +40,7 @@ public final class DamageScalingHelper {
     }
 
     public static float scaleFixedAttack(Mob owner, float damage) {
+        if (OverpoweredMobs.isExcludedMob(owner.getType())) return damage;
         if (!owner.entityTags().contains(OverpoweredMobs.BOOSTED_TAG)) return damage;
         var config = OverpoweredMobs.getConfig();
         double multiplier = config.getFor(owner.getType()).damageMultiplier()

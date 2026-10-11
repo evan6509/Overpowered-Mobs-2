@@ -4,7 +4,6 @@ import com.overpoweredmobs.OverpoweredMobs;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.ItemStack;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,7 +21,7 @@ public class DropMultiplierMixin {
     )
     private Consumer<ItemStack> multiplyLootTableDrops(Consumer<ItemStack> drop) {
         if (!((Object) this instanceof Mob mob) || !mob.isDeadOrDying()) return drop;
-        if (mob.getType().getCategory() != MobCategory.MONSTER) return drop;
+        if (!OverpoweredMobs.isSupportedMonster(mob.getType())) return drop;
         if (mob.entityTags().contains(OverpoweredMobs.PINATA_TAG)) return drop;
 
         boolean hasArmor = false;

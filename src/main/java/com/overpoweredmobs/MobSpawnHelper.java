@@ -9,7 +9,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.monster.Creeper;
@@ -21,7 +20,7 @@ public final class MobSpawnHelper {
 
     // First tick reaches overrides that never call Mob.finalizeSpawn and runs after sizing.
     public static void initialize(Mob mob, ServerLevel level) {
-        if (mob.getType().getCategory() != MobCategory.MONSTER
+        if (!OverpoweredMobs.isSupportedMonster(mob.getType())
             || mob.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG)
             || mob.entityTags().contains(OverpoweredMobs.BOOSTED_TAG)
             || mob.entityTags().contains(OverpoweredMobs.HORDE_TAG)) return;
@@ -50,7 +49,7 @@ public final class MobSpawnHelper {
     }
 
     public static void restoreConversion(Mob source, Mob converted) {
-        if (converted == null || converted.getType().getCategory() != MobCategory.MONSTER
+        if (converted == null || !OverpoweredMobs.isSupportedMonster(converted.getType())
             || converted.entityTags().contains(OverpoweredMobs.CAVALRY_MOUNT_TAG)) return;
         boolean boosted = source.entityTags().contains(OverpoweredMobs.BOOSTED_TAG);
         boolean horde = source.entityTags().contains(OverpoweredMobs.HORDE_TAG);
@@ -92,7 +91,7 @@ public final class MobSpawnHelper {
             if (!config.isTestMode() && rider.getRandom().nextDouble() >= entry.chance()) continue;
             Identifier mountKey = Identifier.tryParse(entry.mount());
             EntityType<?> mountType = mountKey == null ? null : BuiltInRegistries.ENTITY_TYPE.getOptional(mountKey).orElse(null);
-            if (mountType == null) continue;
+            if (mountType == null || OverpoweredMobs.isExcludedMob(mountType)) continue;
             var entity = mountType.create(level, EntitySpawnReason.JOCKEY);
             if (!(entity instanceof Mob mount)) continue;
             mount.setPos(rider.position());

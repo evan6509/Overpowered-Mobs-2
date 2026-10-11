@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobCategory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,7 +16,7 @@ public class ExperienceMultiplierMixin {
     @Inject(method = "getExperienceReward", at = @At("RETURN"), cancellable = true)
     private void multiplyExperience(ServerLevel level, Entity attacker, CallbackInfoReturnable<Integer> cir) {
         if (!(((Object) this) instanceof Mob mob)) return;
-        if (mob.getType().getCategory() != MobCategory.MONSTER) return;
+        if (!OverpoweredMobs.isSupportedMonster(mob.getType())) return;
         if (mob.entityTags().contains(OverpoweredMobs.PINATA_TAG)) {
             cir.setReturnValue(0);
             return;

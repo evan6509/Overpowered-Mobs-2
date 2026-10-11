@@ -22,6 +22,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -63,7 +64,16 @@ public class OverpoweredMobs implements ModInitializer {
         }
     }
 
+    public static boolean isExcludedMob(EntityType<?> type) {
+        return Identifier.withDefaultNamespace("giant").equals(BuiltInRegistries.ENTITY_TYPE.getKey(type));
+    }
+
+    public static boolean isSupportedMonster(EntityType<?> type) {
+        return type.getCategory() == MobCategory.MONSTER && !isExcludedMob(type);
+    }
+
     public static void applyBoosts(Mob mob) {
+        if (isExcludedMob(mob.getType())) return;
         if (mob.entityTags().contains(BOOSTED_TAG)) {
             OverpoweredMobsLogger.info("  -> skip boost: already boosted");
             return;
@@ -111,6 +121,7 @@ public class OverpoweredMobs implements ModInitializer {
     }
 
     public static void tryApplyElite(Mob mob) {
+        if (isExcludedMob(mob.getType())) return;
         if (!config.isEnableEliteMobs() || mob.entityTags().contains(ELITE_TAG)) return;
         if (!config.isTestMode() && mob.getRandom().nextDouble() >= config.getEliteChance()) return;
 
@@ -118,6 +129,7 @@ public class OverpoweredMobs implements ModInitializer {
     }
 
     public static void applyElite(Mob mob) {
+        if (isExcludedMob(mob.getType())) return;
         if (mob.entityTags().contains(ELITE_TAG)) return;
 
         multiplyAttribute(mob, Attributes.MAX_HEALTH, config.getEliteHealthMultiplier());

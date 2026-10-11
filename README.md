@@ -4,6 +4,8 @@ A Fabric mod for Minecraft 26.2 that turns hostile mobs into formidable enemies 
 
 Fabric is the only supported platform. The experimental Paper port is discontinued and will receive no updates or testing.
 
+Giants are excluded from this mod's enhancements and cavalry. Vanilla giants can still be summoned.
+
 ## Features
 
 ### Core
@@ -26,7 +28,6 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 - **Skeleton Horsemen** — Skeletons, strays, bogged, and parched can spawn on skeleton horses (20%)
 - **Zombie Piñata** — Zombies explode into baby zombies on player kill (1% base, 75% when densely packed)
 - **Evil Bunnies** — All rabbits spawn as the killer variant
-- **Giant AI** — Giants now have attack, look, wander, and random look goals
 - **Silverfish Speed** — Configurable extra speed for silverfish (default 1.0×, disabled)
 - **Shulker Levitation** — Doubled levitation duration from shulker bullets
 - **Parched** — Desert skeleton variant gets a bow like other skeletons

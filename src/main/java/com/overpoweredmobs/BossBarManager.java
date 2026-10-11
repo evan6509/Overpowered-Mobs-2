@@ -69,6 +69,7 @@ public final class BossBarManager {
         double nearestDistSq = rangeSq;
 
         for (Mob mob : level.getEntitiesOfClass(Mob.class, player.getBoundingBox().inflate(Math.sqrt(rangeSq)))) {
+            if (OverpoweredMobs.isExcludedMob(mob.getType())) continue;
             if (!mob.isAlive()) continue;
             if (!mob.entityTags().contains(OverpoweredMobs.BOOSTED_TAG)) continue;
             double distSq = mob.distanceToSqr(player);

@@ -231,6 +231,11 @@ public class OPMCommand {
             return 0;
         }
 
+        if (OverpoweredMobs.isExcludedMob(riderType) || OverpoweredMobs.isExcludedMob(mountType)) {
+            ctx.getSource().sendFailure(Component.literal("Giants are not supported by Overpowered Mobs cavalry"));
+            return 0;
+        }
+
         if (!(ctx.getSource().getLevel() instanceof ServerLevel level)) return 0;
         Vec3 pos = ctx.getSource().getPosition();
         DifficultyInstance difficulty = level.getCurrentDifficultyAt(BlockPos.containing(pos));

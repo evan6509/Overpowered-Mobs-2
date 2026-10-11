@@ -64,7 +64,7 @@ public class OverpoweredConfig {
     private Map<String, MobConfig> mobs = new HashMap<>(defaultMobOverrides());
     private MobConfig defaults = MobConfig.defaults();
     private List<CavalryEntry> cavalry = defaultCavalry();
-    private double spawnChance = 0.05;
+    private double spawnChance = 0.2;
     private double hordeSpeedMultiplier = 1.0;
     private double hordeFollowRangeMultiplier = 3.0;
     private boolean enableEndermanTeleportStrike = true;

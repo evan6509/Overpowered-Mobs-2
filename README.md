@@ -7,7 +7,7 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 ## Features
 
 ### Core
-- **Mob Boosting** — Multiplied health, damage, speed, armor, and follow range for hostile mobs
+- **Mob Boosting** — Most hostile mobs have a 20% chance to receive multiplied health, damage, speed, armor, and follow range (pillagers default to 15%, creepers to 20%)
 - **Horde Mode** — Mobs that fail the spawn roll get 3× follow range (configurable speed bonus)
 - **Dynamic Drop Multiplier** — 1.2× drops without armor, 3× with armor
 - **Dimension Multipliers** — Per-dimension stat scaling (e.g., nerf overworld, buff nether)
@@ -58,6 +58,7 @@ Fabric is the only supported platform. The experimental Paper port is discontinu
 Invalid config files are preserved. Failed reloads retain the current settings and report an error; an invalid file at startup uses defaults in memory until the file is corrected. Saves use atomic replacement where supported.
 Per-mob entries inherit the stat multipliers in `defaults` unless they specify an override.
 Explicit per-mob multipliers in older configs are preserved, even when they match shipped defaults. Remove a per-mob field to make it inherit the global value.
+The global `spawnChance` defaults to `0.2` (20%). Existing configs keep their saved value; set the top-level `spawnChance` to `0.2` and run `/opm reload` to apply the new rate. Per-mob `spawnChance` overrides still take precedence.
 
 ### Default multipliers
 
@@ -93,7 +94,7 @@ Explicit per-mob multipliers in older configs are preserved, even when they matc
   "enableAngryEndermen": true,
   "enableWaterEndermen": true,
   "chargedCreeperChance": 1.0,
-  "spawnChance": 0.05,
+  "spawnChance": 0.2,
   "enableEndermanTeleportStrike": true,
   "endermanTeleportCooldown": 100,
   "endermanTeleportMinRange": 4.0,
